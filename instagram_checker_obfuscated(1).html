@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Unfollow Checker</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   BASE
+============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Checker palette */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #555;
+  --color-text-tertiary: #999;
+  --color-background-primary: #fff;
+  --color-background-secondary: #f7f7f5;
+  --color-background-tertiary: #efefec;
+  --color-border-primary: #aaa;
+  --color-border-secondary: #ccc;
+  --color-border-tertiary: #e5e5e5;
+  --border-radius-lg: 12px;
+  --border-radius-md: 8px;
+
+  /* Tutorial palette */
+  --bg: #F5F3EE;
+  --surface: #FDFCF9;
+  --surface2: #F0EDE6;
+  --border: #E2DDD5;
+  --border2: #CDC8BE;
+  --text: #1C1A17;
+  --text2: #6B6560;
+  --text3: #A09890;
+  --accent: #E8611A;
+  --accent-light: #FEF0E7;
+  --accent-border: #F5C4A0;
+  --done-color: #2E7D32;
+  --done-light: #EAF3DE;
+  --done-border: #97C459;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ============================================================
+   NAVIGATION TABS
+============================================================ */
+.app-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-header-inner {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 0;
+  flex-shrink: 0;
+}
+.app-logo-icon {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #E8611A, #F0921A);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.app-logo-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 8px 0;
+}
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.nav-tab:hover { background: var(--surface2); color: var(--text); }
+.nav-tab.active {
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 600;
+}
+.nav-tab svg { flex-shrink: 0; }
+
+/* ============================================================
+   PAGE SWITCHER
+============================================================ */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ============================================================
+   ── PAGE: CHECKER ──
+============================================================ */
+.checker-wrap {
+  padding: 1.5rem 0;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 1.5rem 24px;
+}
+
+.hero { text-align: center; margin-bottom: 1.75rem; }
+.hero h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.hero h1 em { font-style: italic; color: var(--accent); }
+.hero p { font-size: 14px; color: var(--text2); line-height: 1.6; }
+
+/* Upload grid */
+.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
+.upload-card {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-lg);
+  padding: 1.25rem;
+}
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.card-header h3 {
+  font-size: 11px; font-weight: 500; color: var(--color-text-secondary);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.btn-reset {
+  display: none; align-items: center; gap: 5px; padding: 4px 10px;
+  background: transparent; border: 0.5px solid #F09595; border-radius: 20px;
+  font-size: 11px; color: #A32D2D; cursor: pointer; transition: all 0.15s;
+  font-family: inherit;
+}
+.btn-reset:hover { background: #FCEBEB; }
+
+.drop-zone {
+  border: 1.5px dashed var(--color-border-secondary);
+  border-radius: var(--border-radius-md);
+  padding: 2rem 1rem; text-align: center; cursor: pointer;
+  transition: all 0.2s; background: var(--color-background-secondary);
+}
+.drop-zone:hover, .drop-zone.drag { border-color: #378ADD; background: #E6F1FB; }
+.drop-zone.done { border-style: solid; border-color: #639922; background: #EAF3DE; cursor: default; }
+
+.dz-icon { margin-bottom: 10px; color: var(--color-text-tertiary); }
+.dz-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 3px; }
+.dz-sub { font-size: 11px; color: var(--color-text-tertiary); }
+.dz-done-wrap { display: none; flex-direction: column; align-items: center; gap: 6px; }
+.dz-done-wrap .dz-fname {
+  font-size: 13px; font-weight: 500; color: #3B6D11;
+  max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.dz-done-wrap .dz-fcount { font-size: 12px; color: #3B6D11; opacity: 0.8; }
+
+.step-hint {
+  margin-top: 12px; padding: 10px 12px;
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+  border: 0.5px solid var(--color-border-tertiary);
+}
+.step-hint span { font-size: 11px; color: var(--color-text-secondary); line-height: 1.6; }
+.step-hint b { color: var(--color-text-primary); font-weight: 500; }
+.step-hint a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+.step-hint a:hover { text-decoration: underline; }
+
+/* Stats */
+.stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+.stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 1rem; text-align: center; }
+.stat .val { font-size: 26px; font-weight: 500; margin-bottom: 2px; }
+.stat .lbl { font-size: 11px; color: var(--color-text-secondary); line-height: 1.4; }
+.stat.danger .val { color: #A32D2D; }
+.stat.success .val { color: #3B6D11; }
+.stat.info .val { color: #185FA5; }
+.stat.warn .val { color: #854F0B; }
+.stat.ghost-stat .val { color: #6B7280; }
+
+/* Ghost hint banner */
+.ghost-hint {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 11px 14px; background: #FFFBEB;
+  border: 0.5px solid #FCD34D; border-radius: var(--border-radius-md);
+  margin-bottom: 1rem; font-size: 12px; color: #78350F; line-height: 1.55;
+}
+.ghost-hint svg { flex-shrink: 0; margin-top: 1px; opacity: 0.7; }
+
+/* Toolbar */
+.toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
+.search-input {
+  flex: 1; min-width: 180px; padding: 8px 12px;
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-md);
+  font-size: 13px; color: var(--color-text-primary); outline: none;
+  font-family: inherit;
+}
+.search-input:focus { border-color: var(--color-border-primary); }
+
+.filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.ftab {
+  padding: 6px 14px;
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 20px; font-size: 12px; color: var(--color-text-secondary);
+  cursor: pointer; transition: all 0.15s; font-family: inherit;
+}
+.ftab:hover { border-color: var(--color-border-secondary); color: var(--color-text-primary); }
+.ftab.active-red { background: #FCEBEB; border-color: #F09595; color: #A32D2D; font-weight: 500; }
+.ftab.active-green { background: #EAF3DE; border-color: #97C459; color: #3B6D11; font-weight: 500; }
+.ftab.active-blue { background: #E6F1FB; border-color: #85B7EB; color: #185FA5; font-weight: 500; }
+.ftab.active-gray { background: var(--color-background-tertiary); border-color: var(--color-border-secondary); color: var(--color-text-primary); font-weight: 500; }
+.ftab.active-ghost { background: #F3F4F6; border-color: #9CA3AF; color: #374151; font-weight: 500; }
+.page-info { font-size: 12px; color: var(--color-text-secondary); white-space: nowrap; }
+
+/* Table */
+.table-wrap {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-lg); overflow: hidden;
+}
+.table-head {
+  display: grid; grid-template-columns: 44px 1fr 155px 100px 135px 110px;
+  background: var(--color-background-secondary);
+  padding: 10px 16px; font-size: 11px; font-weight: 500;
+  color: var(--color-text-secondary); text-transform: uppercase;
+  letter-spacing: 0.05em; border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.table-body { max-height: 460px; overflow-y: auto; }
+.table-row {
+  display: grid; grid-template-columns: 44px 1fr 155px 100px 135px 110px;
+  padding: 10px 16px; border-bottom: 0.5px solid var(--color-border-tertiary);
+  align-items: center; transition: background 0.12s;
+}
+.table-row:hover { background: var(--color-background-secondary); }
+.table-row.is-ghost { background: #FAFAFA; }
+.table-row.is-ghost:hover { background: #F3F4F6; }
+.table-row:last-child { border-bottom: none; }
+.row-num { font-size: 12px; color: var(--color-text-tertiary); }
+.row-user { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 500; flex-shrink: 0; transition: filter 0.2s;
+}
+.is-ghost .avatar { filter: grayscale(1); opacity: 0.5; }
+.uname { font-size: 13px; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.uname a { color: inherit; text-decoration: none; }
+.uname a:hover { color: #185FA5; text-decoration: underline; }
+.is-ghost .uname a { color: var(--color-text-tertiary); text-decoration: line-through; }
+.row-date { font-size: 12px; color: var(--color-text-secondary); }
+.row-source { font-size: 11px; color: var(--color-text-tertiary); }
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+.badge.red { background: #FCEBEB; color: #A32D2D; }
+.badge.green { background: #EAF3DE; color: #3B6D11; }
+.badge.blue { background: #E6F1FB; color: #185FA5; }
+.badge.gray { background: #F3F4F6; color: #6B7280; }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 9px; border-radius: 16px; font-size: 11px; cursor: pointer;
+  border: 0.5px solid var(--color-border-secondary);
+  background: transparent; color: var(--color-text-tertiary);
+  transition: all 0.15s; white-space: nowrap; font-family: inherit;
+}
+.btn-ghost:hover { border-color: #9CA3AF; background: #F3F4F6; color: #374151; }
+.btn-ghost.marked { border-color: #9CA3AF; background: #F3F4F6; color: #6B7280; }
+.btn-ghost.marked:hover { border-color: #EF4444; background: #FEF2F2; color: #DC2626; }
+
+.error-badge {
+  margin-top: 8px; padding: 8px 12px; background: #FCEBEB;
+  border-radius: var(--border-radius-md); font-size: 12px; color: #A32D2D; text-align: center;
+}
+
+/* ============================================================
+   ── PAGE: TUTORIAL ──
+============================================================ */
+.tutorial-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 24px 24px;
+  text-align: center;
+}
+.header-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-light);
+  border: 1px solid var(--accent-border); padding: 4px 12px;
+  border-radius: 20px; margin-bottom: 14px;
+}
+.tutorial-header h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(26px, 5vw, 40px);
+  font-weight: 400; color: var(--text); line-height: 1.15; margin-bottom: 10px;
+}
+.tutorial-header h1 em { font-style: italic; color: var(--accent); }
+.header-sub { font-size: 14px; color: var(--text2); max-width: 480px; margin: 0 auto; line-height: 1.6; }
+
+.progress-wrap { max-width: 660px; margin: 24px auto 0; padding: 0 24px; }
+.progress-bar-bg { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-bar-fill {
+  height: 100%; background: linear-gradient(90deg, var(--accent), #F0921A);
+  border-radius: 99px; transition: width 0.5s cubic-bezier(.4,0,.2,1); width: 0%;
+}
+.progress-label { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--text3); font-weight: 500; }
+
+.tut-container { max-width: 660px; margin: 0 auto; padding: 32px 24px 60px; }
+
+/* Step cards */
+.step-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 12px; overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s; cursor: pointer;
+}
+.step-card:hover:not(.done) { border-color: var(--border2); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.step-card.s-active { border-color: var(--accent-border); box-shadow: 0 4px 20px rgba(232, 97, 26, 0.1); }
+.step-card.done { border-color: var(--done-border); background: var(--done-light); cursor: default; }
+
+.step-header { display: flex; align-items: center; gap: 14px; padding: 16px 18px; user-select: none; }
+.step-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; flex-shrink: 0;
+  background: var(--surface2); color: var(--text2);
+  border: 1px solid var(--border); transition: all 0.25s;
+}
+.s-active .step-num { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px rgba(232,97,26,0.3); }
+.done .step-num { background: var(--done-color); color: #fff; border-color: var(--done-color); }
+
+.step-title-wrap { flex: 1; min-width: 0; }
+.step-title { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.done .step-title { color: var(--done-color); }
+.step-subtitle { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.done .step-subtitle { color: #5a9e3e; }
+
+.step-chevron { color: var(--text3); transition: transform 0.25s, opacity 0.2s; flex-shrink: 0; }
+.s-active .step-chevron { transform: rotate(180deg); color: var(--accent); }
+.done .step-chevron { opacity: 0; }
+
+.step-body {
+  display: none; padding: 0 18px 18px;
+  border-top: 1px solid var(--border);
+  animation: slideDown 0.2s ease;
+}
+.s-active .step-body { display: block; }
+.done .step-body { display: none !important; }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Tutorial instruction */
+.instruction {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px 16px;
+  margin-top: 14px; font-size: 13px; line-height: 1.65; color: var(--text2);
+}
+.instruction strong { color: var(--text); font-weight: 600; }
+.tap {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 1px 8px;
+  font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap;
+}
+
+/* Mock phone UI */
+.mock-screen {
+  background: #fff; border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin-top: 14px; font-size: 13px;
+}
+.mock-topbar {
+  background: #FAFAFA; border-bottom: 1px solid #EAEAEA;
+  padding: 10px 14px; display: flex; align-items: center; gap: 8px;
+}
+.mock-topbar-title { font-size: 13px; font-weight: 600; color: #111; flex: 1; text-align: center; }
+.mock-back { color: #0095F6; font-size: 13px; cursor: default; }
+.mock-list { padding: 4px 0; }
+.mock-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid #F5F5F5; transition: background 0.1s;
+}
+.mock-item:last-child { border-bottom: none; }
+.mock-item.hl { background: #FEF3EC; border-left: 3px solid var(--accent); }
+.mock-item-left { display: flex; align-items: center; gap: 10px; }
+.mock-item-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.mock-item-label { font-size: 13px; color: #111; }
+.mock-item-sub { font-size: 11px; color: #888; margin-top: 1px; }
+.mock-item-arrow { color: #C7C7CC; font-size: 12px; }
+.mock-item-check { width: 20px; height: 20px; border-radius: 50%; background: #0095F6; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* Note box */
+.tut-note {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: var(--accent-light); border: 1px solid var(--accent-border);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  margin-top: 12px; font-size: 12px; color: #7A3510; line-height: 1.55;
+}
+.tut-note svg { flex-shrink: 0; margin-top: 1px; }
+
+/* Done button */
+.btn-step-done {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 11px; background: var(--accent);
+  color: #fff; border: none; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 16px;
+  transition: background 0.15s, transform 0.1s; font-family: inherit;
+}
+.btn-step-done:hover { background: #D45512; }
+.btn-step-done:active { transform: scale(0.99); }
+.btn-step-done.final { background: var(--done-color); }
+.btn-step-done.final:hover { background: #1B5E20; }
+
+/* Checklist */
+.check-list { margin-top: 10px; }
+.check-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13px; color: var(--text2); }
+.check-row.checked { color: var(--text); font-weight: 500; }
+.check-box { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.check-row.checked .check-box { background: #0095F6; border-color: #0095F6; }
+
+/* Option rows */
+.option-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 14px; border-radius: 8px; border: 1px solid var(--border);
+  margin-top: 8px; font-size: 13px; background: #fff;
+}
+.option-row.sel { border-color: #0095F6; background: #EBF5FF; font-weight: 600; color: #0057A8; }
+.radio-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border2); flex-shrink: 0; }
+.option-row.sel .radio-dot { border-color: #0095F6; background: radial-gradient(circle, #0095F6 5px, transparent 5px); }
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); padding: 4px 0 8px; margin-top: 12px; }
+
+/* Done all banner */
+.done-banner {
+  display: none; background: var(--done-light); border: 1px solid var(--done-border);
+  border-radius: var(--radius); padding: 28px; text-align: center; margin-top: 8px;
+  animation: slideDown 0.3s ease;
+}
+.done-banner.show { display: block; }
+.done-banner-icon { font-size: 40px; margin-bottom: 12px; }
+.done-banner h3 { font-family: 'Instrument Serif', serif; font-size: 24px; font-weight: 400; color: var(--done-color); margin-bottom: 8px; }
+.done-banner p { font-size: 13px; color: #4a7a28; line-height: 1.6; }
+.done-banner .btn-goto {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 16px; padding: 10px 20px;
+  background: var(--done-color); color: #fff;
+  border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s; font-family: inherit;
+}
+.done-banner .btn-goto:hover { background: #1B5E20; }
+
+/* ============================================================
+   TOAST & FOOTER
+============================================================ */
+.toast {
+  position: fixed; top: 16px; left: 50%;
+  transform: translateX(-50%) translateY(-70px);
+  background: #2C2C2A; color: #F1EFE8;
+  padding: 10px 20px; border-radius: var(--border-radius-md);
+  font-size: 13px; transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+  z-index: 999; white-space: nowrap; pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+.footer {
+  text-align: center; padding: 1.5rem 0 0.5rem;
+  font-size: 11px; color: var(--text3); letter-spacing: 0.04em;
+}
+.footer a { color: var(--text2); text-decoration: none; font-weight: 500; }
+.footer a:hover { text-decoration: underline; }
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 700px) {
+  .app-logo-text { display: none; }
+  .nav-tab span { display: none; }
+  .upload-grid { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: repeat(3, 1fr); }
+  .table-head, .table-row { grid-template-columns: 32px 1fr 120px 90px; }
+  .table-head span:nth-child(3),
+  .table-head span:nth-child(4),
+  .table-head span:nth-child(6),
+  .table-row .row-source,
+  .table-row .row-date,
+  .table-row .row-action { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     APP HEADER + NAVIGATION
+════════════════════════════════════════════════════════════ -->
+<div class="app-header">
+  <div class="app-header-inner">
+    <div class="app-logo">
+      <div class="app-logo-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <span class="app-logo-text">Unfollow Checker</span>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tab-checker" onclick="switchPage('checker')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span>Cek Unfollow</span>
+      </button>
+      <button class="nav-tab" id="tab-tutorial" onclick="switchPage('tutorial')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Cara Download Data</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE: CHECKER
+════════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-checker">
+  <div class="checker-wrap">
+    <div class="hero">
+      <h1>Instagram <em>Unfollow</em> Checker</h1>
+      <p>Upload file HTML dari data export Instagram untuk melihat siapa yang tidak follow balik.<br>
+        Belum punya filenya? <a onclick="switchPage('tutorial')" style="color:var(--accent);cursor:pointer;font-weight:600">Lihat cara downloadnya →</a>
+      </p>
+    </div>
+
+    <!-- Upload grid -->
+    <div class="upload-grid">
+      <!-- Followers -->
+      <div class="upload-card">
+        <div class="card-header">
+          <h3>File Followers</h3>
+          <button class="btn-reset" id="reset-followers" onclick="resetFile('followers')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+            Ganti file
+          </button>
+        </div>
+        <div class="drop-zone" id="dz-followers"
+             ondragover="onDrag(event,'followers')"
+             ondragleave="onLeave('followers')"
+             ondrop="onDrop(event,'followers')"
+             onclick="handleZoneClick('followers')">
+          <div id="dz-followers-idle">
+            <div class="dz-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="dz-title">Klik atau drag file di sini</div>
+            <div class="dz-sub">followers_1.html</div>
+          </div>
+          <div class="dz-done-wrap" id="dz-followers-done">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div class="dz-fname" id="dz-followers-fname"></div>
+            <div class="dz-fcount" id="dz-followers-fcount"></div>
+          </div>
+        </div>
+        <input type="file" id="fi-followers" accept=".html,.htm" style="display:none" onchange="onFile(event,'followers')">
+        <div class="step-hint">
+          <span>Lokasi: <b>connections → followers_and_following → followers_1.html</b></span>
+        </div>
+        <div id="err-followers" class="error-badge" style="display:none"></div>
+      </div>
+
+      <!-- Following -->
+      <div class="upload-card">
+        <div class="card-header">
+          <h3>File Following</h3>
+          <button class="btn-reset" id="reset-following" onclick="resetFile('following')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+            Ganti file
+          </button>
+        </div>
+        <div class="drop-zone" id="dz-following"
+             ondragover="onDrag(event,'following')"
+             ondragleave="onLeave('following')"
+             ondrop="onDrop(event,'following')"
+             onclick="handleZoneClick('following')">
+          <div id="dz-following-idle">
+            <div class="dz-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="dz-title">Klik atau drag file di sini</div>
+            <div class="dz-sub">following.html</div>
+          </div>
+          <div class="dz-done-wrap" id="dz-following-done">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div class="dz-fname" id="dz-following-fname"></div>
+            <div class="dz-fcount" id="dz-following-fcount"></div>
+          </div>
+        </div>
+        <input type="file" id="fi-following" accept=".html,.htm" style="display:none" onchange="onFile(event,'following')">
+        <div class="step-hint">
+          <span>Lokasi: <b>connections → followers_and_following → following.html</b></span>
+        </div>
+        <div id="err-following" class="error-badge" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="results-section" style="display:none">
+      <div class="stats-row">
+        <div class="stat danger"><div class="val" id="s-notback">0</div><div class="lbl">Tidak follow balik</div></div>
+        <div class="stat success"><div class="val" id="s-mutual">0</div><div class="lbl">Saling follow</div></div>
+        <div class="stat warn"><div class="val" id="s-onlyfollower">0</div><div class="lbl">Belum kamu follow balik</div></div>
+        <div class="stat info"><div class="val" id="s-pct">0%</div><div class="lbl">Ratio follow back</div></div>
+        <div class="stat ghost-stat"><div class="val" id="s-ghost">0</div><div class="lbl">Akun tidak ditemukan</div></div>
+      </div>
+
+      <div class="ghost-hint">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Klik <b>@username</b> untuk membuka profil Instagram di tab baru. Jika muncul pesan <i>"Sorry, this page isn't available"</i>, kembali ke sini lalu klik <b>Tidak ada</b> di baris tersebut. Tandai bisa dibatalkan kapan saja.</span>
+      </div>
+
+      <div class="toolbar">
+        <input class="search-input" type="text" id="search" placeholder="Cari username..." oninput="renderTable()">
+        <div class="filter-tabs">
+          <button class="ftab active-red" id="f-notback" onclick="setFilter('notback')">Tidak follow balik</button>
+          <button class="ftab" id="f-mutual" onclick="setFilter('mutual')">Mutual</button>
+          <button class="ftab" id="f-onlyfollower" onclick="setFilter('onlyfollower')">Belum kamu follow</button>
+          <button class="ftab" id="f-ghost" onclick="setFilter('ghost')">Akun tidak ada <span id="ghost-badge" style="display:none"></span></button>
+          <button class="ftab" id="f-all" onclick="setFilter('all')">Semua</button>
+        </div>
+        <span class="page-info" id="page-info"></span>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-head">
+          <span>#</span><span>Username</span><span>Tanggal follow</span><span>Sumber</span><span>Status</span><span>Aksi</span>
+        </div>
+        <div class="table-body" id="table-body"></div>
+      </div>
+    </div>
+
+    <div id="waiting-state" style="text-align:center;padding:2.5rem 1rem">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.18;margin-bottom:1rem"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      <p style="font-size:13px;color:var(--text2)">Upload kedua file untuk melihat hasil analisis</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE: TUTORIAL
+════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-tutorial">
+  <div class="tutorial-header">
+    <div class="header-eyebrow">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Panduan Lengkap
+    </div>
+    <h1>Cara Download Data<br><em>Followers & Following</em></h1>
+    <p class="header-sub">Ikuti 10 langkah berikut untuk mengekspor data Instagram kamu. Prosesnya sekitar 5–10 menit.</p>
+    <div class="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-label">
+        <span id="progress-text">0 dari 10 langkah selesai</span>
+        <span id="progress-pct">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tut-container">
+
+    <!-- Step 1 -->
+    <div class="step-card s-active" id="step-1" onclick="toggleStep(1)">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <div class="step-title-wrap">
+          <div class="step-title">Buka Profil Instagram</div>
+          <div class="step-subtitle">Tap ikon profil di pojok kanan bawah</div>
+        </div>
+        <svg class="step-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="step-body">
+        <div class="instruction">Buka aplikasi Instagram, lalu tap ikon <strong>Profil</strong> (ikon orang) di pojok kanan bawah layar.</div>
+        <div class="mock-screen">
+          <div class="mock-topbar">
+            <div style="width:20px"></div>
+            <div class="mock-topbar-title">username_kamu</div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.8"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </div>
+          <div style="padding:20px;text-align:center;color:#888;font-size:12px">
+            <div style="width:64px;height:64px;border-radius:50%;background:#EEE;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:28px">👤</div>
+            <div style="font-weight:600;color:#111;font-size:14px">username_kamu</div>
+            <div style="margin-top:6px;color:#888;font-size:12px">Ini halaman profilmu</div>
+          </div>
+        </div>
+        <button class="btn-step-done" onclick="markDone(1,event)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Sudah, lanjut ke langkah berikutnya
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-card" id="step-2" onclick="toggleStep(2)">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <div class="step-title-wrap">
+          <div class="step-title">Buka Settings and Activity</div>
+          <div class="step-subtitle">Tap ikon menu (≡) → Settings and activity</div>
+        </div>
+        <svg class="step-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="step-body">
+        <div class="instruction">Di halaman profil, tap ikon <span class="tap">≡</span> di kanan atas, lalu pilih <strong>Settings and activity</strong> dari menu yang muncul.</div>
+        <div class="mock-screen">
+          <div class="mock-topbar"><div class="mock-back">‹</div><div class="mock-topbar-title">Menu</div><div style="width:20px"></div></div>
+          <div class="mock-list">
+            <div class="mock-item hl">
+              <div class="mock-item-left"><div class="mock-item-icon" style="background:#FEF3EC">⚙️</div><div><div class="mock-item-label">Settings and activity</div><div class="mock-item-sub">Kelola akun & privasi</div></div></div>
+              <div class="mock-item-arrow">›</div>
+            </div>
+            <div class="mock-item"><div class="mock-item-left"><div class="mock-item-icon" style="background:#F0F0F0">🔖</div><div><div class="mock-item-label">Saved</div></div></div><div class="mock-item-arrow">›</div></div>
+            <div class="mock-item"><div class="mock-item-left"><div class="mock-item-icon" style="background:#F0F0F0">📊</div><div><div class="mock-item-label">Your activity</div></div></div><div class="mock-item-arrow">›</div></div>
+          </div>
+        </div>
+        <button class="btn-step-done" onclick="markDone(2,event)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Sudah, lanjut ke langkah berikutnya</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-card" id="step-3" onclick="toggleStep(3)">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <div class="step-title-wrap">
+          <div class="step-title">Buka Account Center</div>
+          <div class="step-subtitle">Scroll ke bawah dan tap "Account Center"</div>
+        </div>
+        <svg class="step-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="step-body">
+        <div class="instruction">Di halaman <strong>Settings and activity</strong>, scroll ke bawah dan cari bagian <strong>Account Center</strong>, lalu tap untuk membukanya.</div>
+        <div class="mock-screen">
+          <div class="mock-topbar"><div class="mock-back">‹ Settings</div><div class="mock-topbar-title"></div><div style="width:40px"></div></div>
+          <div class="mock-list">
+            <div class="mock-item"><div class="mock-item-left"><div class="mock-item-icon" style="background:#F0F0F0">🔔</div><div><div class="mock-item-label">Notifications</div></div></div><div class="mock-item-arrow">›</div></div>
+            <div class="mock-item"><div class="mock-item-left"><div class="mock-item-icon" style="background:#F0F0F0">🔒</div><div><div class="mock-item-label">Privacy</div></div></div><div class="mock-item-arrow">›</div></div>
+            <div class="mock-item hl"><div class="mock-item-left"><div class="mock-item-icon" style="background:#FEF3EC">🏠</div><div><div class="mock-item-label">Account Center</div><div class="mock-item-sub">Kelola akun Meta kamu</div></div></div><div class="mock-item-arrow">›</div></div>
+          </div>
+        </div>
+        <button class="btn-step-done" onclick="markDone(3,event)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Sudah, lanjut ke langkah berikutnya</button>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step-card" id="step-4" onclick="toggleStep(4)">
+      <div class="step-header">
+        <div class="step-num">4</div>
+        <div class="step-title-wrap">
+          <div class="step-title">Your Information and Permissions</div>
+          <div class="step-subtitle">Tap menu informasi akun</div>
+        </div>
+        <svg class="step-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="step-body">
+        <div class="instruction">Di dalam <strong>Account Center</strong>, tap <strong>Your information and permissions</strong>.</div>
+        <div class="mock-screen">
+          <div class="mock-topbar"><div class="mock-back">‹ Account Center</div><div class="mock-topbar-title"></div><div style="width:40px"></div></div>
+          <div class="mock-list">
+            <div class="mock-item"><div class="mock-item-left"><div class="mock-item-icon" style="background:#F0F0F0">👤</div><div><div class="mock-item-label">Personal details</div></div></div><div class="mock-item-arrow">›</div></div>
+            <div class="mock-item hl"><div class="mock-item-left"><div class="mock-item-icon" style="background:#FEF3EC">🛡️</div><div><div class="mock-item-label">Your information and permissions</div><div class="mock-item-sub">Kelola data & privasi</div></div></div><div class="mock-item-arrow">›</div></div>
+            <div class="mock-item"><div class="mock-item-left"><div class="mock-item-icon" style="background:#F0F0F0">🔗</div><div><div class="mock-item-label">Connected experiences</div></div></div><div class="mock-item-arrow">›</div></div>
+          </div>
+        </div>
+        <button class="btn-step-done" onclick="markDone(4,event)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Sudah, lanjut ke langkah berikutnya</button>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step-card" id="step-5" onclick="toggleStep(5)">
+      <div class="step-header">
+        <div class="step-num">5</div>
+        <div class="step-title-wrap">
+          <div class="step-title">Download Your Information</div>
+          <div class="step-subtitle">Tap "Download your information"</div>
+        </div>
+        <svg class="step-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="step-body">
+        <div class="instruction">Tap <strong>Download your information</strong> atau <strong>Export your information</strong>.</div>
+        <div class="mock-screen">
+          <div class="mock-topbar"><div class="mock-back">‹ Back</div><div class="mock-topbar-title">Your Information</div><div style="width:40px"></div></div>
+          <div class="mock-list">
+            <div class="mock-item"><div class="mock-item-left"><div class="mock-item-icon" style="background:#F0F0F0">📋</div><div><div class="mock-item-label">Access your information</div></div></div><div class="mock-item-arrow">›</div></div>
+            <div class="mock-item hl"><div class="mock-item-left"><div class="mock-item-icon" style="background:#FEF3EC">⬇️</div><div><div class="mock-item-label">Download your information</div><div class="mock-item-sub">Export your data</div></div></div><div class="mock-item-arrow">›</div></div>
+            <div class="mock-item"><div class="mock-item-left"><div class="mock-item-icon" style="background:#F0F0F0">🗑️</div><div><div class="mock-item-label">Delete your information</div></div></div><div class="mock-item-arrow">›</div></div>
+          </div>
+        </div>
+        <button class="btn-step-done" onclick="markDone(5,event)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Sudah, lanjut ke langkah berikutnya</button>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step-card" id="step-6" onclick="toggleStep(6)">
+      <div class="step-header">
+        <div class="step-num">6</div>
+        <div class="step-title-wrap">
+          <div class="step-title">Tap "Create new request"</div>
+          <div class="step-subtitle">Buat permintaan export baru</div>
+        </div>
+        <svg class="step-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="step-body">
+        <div class="instruction">Tap tombol <span class="tap">Create new request</span> atau <span class="tap">Create export</span>.</div>
+        <div class="mock-screen">
+          <div class="mock-topbar"><div class="mock-back">‹ Back</div><div class="mock-topbar-title">Download Information</div><div style="width:40px"></div></div>
+          <div style="padding:16px">
+            <div style="font-size:12px;color:#888;margin-bottom:12px">Kamu dapat meminta salinan data akunmu</div>
+            <div style="background:#0095F6;color:#fff;text-align:center;padding:11px;border-radius:8px;font-weight:600;font-size:13px">Create new request</div>
+            <div style="margin-top:14px;border:1px solid #EAEAEA;border-radius:8px;padding:12px;font-size:12px;color:#888;text-align:center">Belum ada request sebelumnya</div>
+          </div>
+        </div>
+        <button class="btn-step-done" onclick="markDone(6,event)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Sudah, lanjut ke langkah berikutnya</button>
+      </div>
+    </div>
+
+    <!-- Step 7 -->
+    <div class="step-card" id="step-7" onclick="toggleStep(7)">
+      <div class="step-header">
+        <div class="step-num">7</div>
+        <div class="step-title-wrap">
+          <div class="step-title">Pilih Akun & "Export to device"</div>
+          <div class="step-subtitle">Pilih username Instagram kamu</div>
+        </div>
+        <svg class="step-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="step-body">
+        <div class="instruction">Pilih <strong>username Instagram</strong> yang ingin kamu export, lalu pilih <span class="tap">Export to device</span>.</div>
+        <div class="mock-screen">
+          <div class="mock-topbar"><div class="mock-back">‹ Back</div><div class="mock-topbar-title">Select Account</div><div style="width:40px"></div></div>
+          <div class="mock-list">
+            <div class="mock-item hl"><div class="mock-item-left"><div class="mock-item-icon" style="background:#FEF3EC;border-radius:50%">👤</div><div><div class="mock-item-label">@username_kamu</div><div class="mock-item-sub">Instagram</div></div></div><div class="mock-item-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div></div>
+          </div>
+          <div style="padding:14px;border-top:1px solid #EAEAEA">
+            <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">Tujuan</div>
+            <div class="option-row sel"><span>📱 Export to device</span><div class="radio-dot"></div></div>
+            <div class="option-row"><span>📧 Send via email</span><div class="radio-dot"></div></div>
+          </div>
+        </div>
+        <button class="btn-step-done" onclick="markDone(7,event)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Sudah, lanjut ke langkah berikutnya</button>
+      </div>
+    </div>
+
+    <!-- Step 8 -->
+    <div class="step-card" id="step-8" onclick="toggleStep(8)">
+      <div class="step-header">
+        <div class="step-num">8</div>
+        <div class="step-title-wrap">
+          <div class="step-title">Pilih "Custom" & Centang Followers + Following</div>
+          <div class="step-subtitle">Hanya centang 2 opsi ini di bagian Connections</div>
+        </div>
+        <svg class="step-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="step-body">
+        <div class="instruction">Pilih <span class="tap">Custom information</span>, cari bagian <strong>Connections</strong> dan centang hanya:</div>
+        <div class="check-list">
+          <div class="check-row checked"><div class="check-box"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg></div><span>Followers</span></div>
+          <div class="check-row checked"><div class="check-box"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5"><polyline points="20 6 9 17 4 12"/></svg></div><span>Following</span></div>
+          <div class="check-row"><div class="check-box"></div><span style="color:var(--text3)">Posts — jangan dicentang</span></div>
+          <div class="check-row"><div class="check-box"></div><span style="color:var(--text3)">Stories — jangan dicentang</span></div>
+          <div class="check-row"><div class="check-box"></div><span style="color:var(--text3)">Messages — jangan dicentang</span></div>
+        </div>
+        <div class="tut-note">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Memilih semua data akan membuat file ZIP sangat besar. Pilih hanya Followers & Following agar prosesnya lebih cepat.
+        </div>
+        <button class="btn-step-done" onclick="markDone(8,event)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Sudah, lanjut ke langkah berikutnya</button>
+      </div>
+    </div>
+
+    <!-- Step 9 -->
+    <div class="step-card" id="step-9" onclick="toggleStep(9)">
+      <div class="step-header">
+        <div class="step-num">9</div>
+        <div class="step-title-wrap">
+          <div class="step-title">Atur Date Range, Kualitas & Format</div>
+          <div class="step-subtitle">All time · High quality · HTML</div>
+        </div>
+        <svg class="step-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="step-body">
+        <div class="instruction">Atur ketiga opsi berikut sebelum submit:</div>
+        <div class="section-label">📅 Date range</div>
+        <div class="option-row sel"><span>All time</span><div class="radio-dot"></div></div>
+        <div class="option-row"><span>Last year</span><div class="radio-dot"></div></div>
+        <div class="section-label" style="margin-top:14px">🖼️ Media quality</div>
+        <div class="option-row sel"><span>High quality</span><div class="radio-dot"></div></div>
+        <div class="option-row"><span>Medium quality</span><div class="radio-dot"></div></div>
+        <div class="section-label" style="margin-top:14px">📄 Format file</div>
+        <div class="option-row sel"><span>HTML</span><div class="radio-dot"></div></div>
+        <div class="option-row"><span>JSON</span><div class="radio-dot"></div></div>
+        <div class="tut-note">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Wajib pilih format <strong>HTML</strong> — aplikasi ini hanya mendukung file HTML, bukan JSON.
+        </div>
+        <button class="btn-step-done" onclick="markDone(9,event)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Sudah, lanjut ke langkah berikutnya</button>
+      </div>
+    </div>
+
+    <!-- Step 10 -->
+    <div class="step-card" id="step-10" onclick="toggleStep(10)">
+      <div class="step-header">
+        <div class="step-num">10</div>
+        <div class="step-title-wrap">
+          <div class="step-title">Tap "Start export" & Tunggu Notifikasi</div>
+          <div class="step-subtitle">Instagram akan memberi tahu saat file siap</div>
+        </div>
+        <svg class="step-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="step-body">
+        <div class="instruction">Tap <span class="tap">Start export</span>. Instagram akan memproses permintaan — biasanya <strong>beberapa menit hingga beberapa jam</strong>. Kamu akan mendapat notifikasi saat file siap diunduh.</div>
+        <div class="mock-screen">
+          <div class="mock-topbar"><div class="mock-back">‹ Back</div><div class="mock-topbar-title">Export Summary</div><div style="width:40px"></div></div>
+          <div style="padding:18px">
+            <div style="background:#F7F7F7;border-radius:8px;padding:12px;font-size:12px;color:#444;margin-bottom:14px;line-height:1.7">
+              <div>📦 <strong>Followers</strong> + <strong>Following</strong></div>
+              <div>📅 All time &nbsp;·&nbsp; 🖼️ High quality &nbsp;·&nbsp; 📄 HTML</div>
+              <div>📱 Export to device</div>
+            </div>
+            <div style="background:#0095F6;color:#fff;text-align:center;padding:12px;border-radius:8px;font-weight:600;font-size:14px">Start export ›</div>
+            <div style="text-align:center;font-size:11px;color:#888;margin-top:12px;line-height:1.5">Proses mungkin memakan waktu beberapa menit hingga beberapa jam.</div>
+          </div>
+        </div>
+        <div class="tut-note">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Setelah file tersedia: download ZIP → ekstrak → buka folder <strong>connections/followers_and_following/</strong> → upload <strong>followers_1.html</strong> dan <strong>following.html</strong> ke tab Cek Unfollow.
+        </div>
+        <button class="btn-step-done final" onclick="markDone(10,event)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Selesai! Semua langkah sudah dilakukan
+        </button>
+      </div>
+    </div>
+
+    <!-- Done banner -->
+    <div class="done-banner" id="done-banner">
+      <div class="done-banner-icon">🎉</div>
+      <h3>Semua langkah selesai!</h3>
+      <p>Tunggu notifikasi dari Instagram bahwa file export kamu sudah siap.<br>Setelah itu download, ekstrak ZIP, dan upload file HTML ke tab Cek Unfollow.</p>
+      <button class="btn-goto" onclick="switchPage('checker')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Pergi ke Cek Unfollow →
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- FOOTER -->
+<div class="footer">
+  Made by <a href="https://instagram.com/agungmrf_" target="_blank">@agungmrf_</a> &nbsp;·&nbsp; &copy; 2026 All rights reserved
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════ -->
+<script>const _0xa094e1=_0x4ea7;(function(_0x23b85d,_0xf89ce9){const _0x10e83d=_0x4ea7,_0x463e5f=_0x23b85d();while(!![]){try{const _0x19a931=parseInt(_0x10e83d(0x146))/0x1*(parseInt(_0x10e83d(0x13d))/0x2)+-parseInt(_0x10e83d(0x137))/0x3*(parseInt(_0x10e83d(0x11b))/0x4)+-parseInt(_0x10e83d(0x12a))/0x5*(-parseInt(_0x10e83d(0x10b))/0x6)+-parseInt(_0x10e83d(0x12e))/0x7*(parseInt(_0x10e83d(0x11f))/0x8)+parseInt(_0x10e83d(0x155))/0x9+parseInt(_0x10e83d(0x184))/0xa+-parseInt(_0x10e83d(0x11a))/0xb*(parseInt(_0x10e83d(0xf7))/0xc);if(_0x19a931===_0xf89ce9)break;else _0x463e5f['push'](_0x463e5f['shift']());}catch(_0x3f73a1){_0x463e5f['push'](_0x463e5f['shift']());}}}(_0x5c7d,0x70231));const _0x1dbd51=(function(){let _0x368d83=!![];return function(_0x14fd1b,_0x4bdc63){const _0x464255=_0x368d83?function(){const _0x32d5fc=_0x4ea7;if(_0x4bdc63){const _0x44c151=_0x4bdc63[_0x32d5fc(0x15a)](_0x14fd1b,arguments);return _0x4bdc63=null,_0x44c151;}}:function(){};return _0x368d83=![],_0x464255;};}()),_0x2e378d=_0x1dbd51(this,function(){const _0x190c0f=_0x4ea7;let _0x5acc05;try{const _0xe269f2=Function(_0x190c0f(0x19b)+_0x190c0f(0x116)+'\x29\x3b');_0x5acc05=_0xe269f2();}catch(_0x3b02df){_0x5acc05=window;}const _0x76912=_0x5acc05[_0x190c0f(0x15b)]=_0x5acc05[_0x190c0f(0x15b)]||{},_0x355e0a=[_0x190c0f(0x142),_0x190c0f(0xf4),_0x190c0f(0x16f),'\x65\x72\x72\x6f\x72',_0x190c0f(0x14a),'\x74\x61\x62\x6c\x65',_0x190c0f(0x18a)];for(let _0x5101b7=0x0;_0x5101b7<_0x355e0a[_0x190c0f(0x17a)];_0x5101b7++){const _0x4d37d3=_0x1dbd51[_0x190c0f(0x191)]['\x70\x72\x6f\x74\x6f\x74\x79\x70\x65'][_0x190c0f(0x112)](_0x1dbd51),_0x51cd89=_0x355e0a[_0x5101b7],_0x50efba=_0x76912[_0x51cd89]||_0x4d37d3;_0x4d37d3[_0x190c0f(0x10d)]=_0x1dbd51['\x62\x69\x6e\x64'](_0x1dbd51),_0x4d37d3[_0x190c0f(0x16d)]=_0x50efba[_0x190c0f(0x16d)]['\x62\x69\x6e\x64'](_0x50efba),_0x76912[_0x51cd89]=_0x4d37d3;}});_0x2e378d();function switchPage(_0x149a5a){const _0x10fca3=_0x4ea7;document[_0x10fca3(0x143)](_0x10fca3(0x148))[_0x10fca3(0x178)](_0xaaa420=>_0xaaa420['\x63\x6c\x61\x73\x73\x4c\x69\x73\x74'][_0x10fca3(0x15c)](_0x10fca3(0x170))),document[_0x10fca3(0x143)](_0x10fca3(0x140))['\x66\x6f\x72\x45\x61\x63\x68'](_0x542dc9=>_0x542dc9[_0x10fca3(0x122)][_0x10fca3(0x15c)](_0x10fca3(0x170))),document[_0x10fca3(0x123)]('\x70\x61\x67\x65\x2d'+_0x149a5a)[_0x10fca3(0x122)][_0x10fca3(0x198)]('\x61\x63\x74\x69\x76\x65'),document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64'](_0x10fca3(0x15e)+_0x149a5a)[_0x10fca3(0x122)][_0x10fca3(0x198)]('\x61\x63\x74\x69\x76\x65'),window['\x73\x63\x72\x6f\x6c\x6c\x54\x6f']({'\x74\x6f\x70':0x0,'\x62\x65\x68\x61\x76\x69\x6f\x72':_0x10fca3(0x113)});}let _tt;function showToast(_0x448218){const _0x49f56f=_0x4ea7;clearTimeout(_tt);const _0x12de3e=document[_0x49f56f(0x123)](_0x49f56f(0x139));_0x12de3e[_0x49f56f(0x17c)]=_0x448218,_0x12de3e['\x63\x6c\x61\x73\x73\x4c\x69\x73\x74'][_0x49f56f(0x198)](_0x49f56f(0x13b)),_tt=setTimeout(()=>_0x12de3e[_0x49f56f(0x122)]['\x72\x65\x6d\x6f\x76\x65'](_0x49f56f(0x13b)),0xaf0);}let followersData=[],followingData=[],currentFilter='\x6e\x6f\x74\x62\x61\x63\x6b';const ghostSet=new Set(),colors=[_0xa094e1(0x134),_0xa094e1(0x168),_0xa094e1(0x121),'\x23\x46\x43\x45\x34\x45\x43',_0xa094e1(0x16a),_0xa094e1(0x162),_0xa094e1(0x185),_0xa094e1(0x130)],textColors=['\x23\x33\x42\x36\x44\x31\x31','\x23\x31\x38\x35\x46\x41\x35',_0xa094e1(0x163),_0xa094e1(0x11c),_0xa094e1(0x189),_0xa094e1(0x153),'\x23\x36\x44\x34\x43\x31\x41','\x23\x30\x30\x36\x39\x35\x43'];function toggleGhost(_0x2994dc){const _0x22fc61=_0xa094e1;ghostSet['\x68\x61\x73'](_0x2994dc)?(ghostSet[_0x22fc61(0xf3)](_0x2994dc),showToast('\x40'+_0x2994dc+_0x22fc61(0x101))):(ghostSet[_0x22fc61(0x198)](_0x2994dc),showToast('\x40'+_0x2994dc+'\x20\x64\x69\x74\x61\x6e\x64\x61\x69\x3a\x20\x41\x6b\x75\x6e\x20\x74\x69\x64\x61\x6b\x20\x64\x69\x74\x65\x6d\x75\x6b\x61\x6e')),updateGhostStat(),renderTable();}function updateGhostStat(){const _0x1c25ed=_0xa094e1,_0x2a086c=ghostSet['\x73\x69\x7a\x65'];document[_0x1c25ed(0x123)](_0x1c25ed(0x164))['\x74\x65\x78\x74\x43\x6f\x6e\x74\x65\x6e\x74']=_0x2a086c;const _0x590f0a=document[_0x1c25ed(0x123)](_0x1c25ed(0x181));if(_0x2a086c>0x0)_0x590f0a[_0x1c25ed(0x17c)]='\x28'+_0x2a086c+'\x29',_0x590f0a['\x73\x74\x79\x6c\x65'][_0x1c25ed(0x144)]='';else _0x590f0a['\x73\x74\x79\x6c\x65']['\x64\x69\x73\x70\x6c\x61\x79']=_0x1c25ed(0x182);}function handleZoneClick(_0x1b26f5){const _0x35b858=_0xa094e1;if(document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64'](_0x35b858(0xfd)+_0x1b26f5)[_0x35b858(0x122)][_0x35b858(0x132)](_0x35b858(0x126)))return;const _0x3860d4=document[_0x35b858(0x123)]('\x66\x69\x2d'+_0x1b26f5);_0x3860d4[_0x35b858(0x15f)]='',_0x3860d4[_0x35b858(0x192)]();}function parseInstagramHTML(_0x596150){const _0x5b058f=_0xa094e1,_0x4d8915=new DOMParser()[_0x5b058f(0x167)](_0x596150,_0x5b058f(0x118)),_0xf71f7f=[],_0x5e7461=new Set();return _0x4d8915['\x71\x75\x65\x72\x79\x53\x65\x6c\x65\x63\x74\x6f\x72\x41\x6c\x6c']('\x61')[_0x5b058f(0x178)](_0x460a47=>{const _0x181841=_0x5b058f,_0x365daf=_0x460a47[_0x181841(0x16b)](_0x181841(0x169))||'';let _0x58057e='';const _0x5403b7=_0x365daf[_0x181841(0x11e)](/instagram\.com\/_u\/([A-Za-z0-9_.]+)/),_0x1ff89b=_0x365daf[_0x181841(0x11e)](/instagram\.com\/([A-Za-z0-9_.][A-Za-z0-9_.]*)/);if(_0x5403b7)_0x58057e=_0x5403b7[0x1];else{if(_0x1ff89b){const _0xa5ebb9=['\x70',_0x181841(0x14e),_0x181841(0x187),_0x181841(0x10f),'\x74\x76','\x5f\x75',_0x181841(0x13f),_0x181841(0x16c),_0x181841(0x100),'\x61\x72'];if(!_0xa5ebb9[_0x181841(0xf9)](_0x1ff89b[0x1]))_0x58057e=_0x1ff89b[0x1];}}if(!_0x58057e)return;_0x58057e=_0x58057e[_0x181841(0x165)]()[_0x181841(0x18c)]();if(_0x5e7461[_0x181841(0x128)](_0x58057e))return;_0x5e7461[_0x181841(0x198)](_0x58057e);let _0x490418='';const _0x44d77=_0x460a47[_0x181841(0x172)];if(_0x44d77){const _0x1fad05=_0x44d77[_0x181841(0x172)]?Array['\x66\x72\x6f\x6d'](_0x44d77[_0x181841(0x172)][_0x181841(0x194)]):[];for(const _0x4c9d75 of _0x1fad05){const _0x3c8435=_0x4c9d75[_0x181841(0x17c)][_0x181841(0x18c)]();if(/^[A-Z][a-z]{2}\s+\d{1,2},\s+\d{4}/[_0x181841(0x154)](_0x3c8435)){_0x490418=_0x3c8435;break;}}if(!_0x490418){let _0x5e0d66=_0x460a47[_0x181841(0x172)];for(let _0x233b75=0x0;_0x233b75<0x5&&_0x5e0d66;_0x233b75++){_0x5e0d66[_0x181841(0x143)]('\x2a')['\x66\x6f\x72\x45\x61\x63\x68'](_0x5ae440=>{const _0x3e25e6=_0x181841;if(!_0x490418){const _0x125787=_0x5ae440[_0x3e25e6(0x17c)][_0x3e25e6(0x18c)]();if(/^[A-Z][a-z]{2}\s+\d{1,2},\s+\d{4}/[_0x3e25e6(0x154)](_0x125787))_0x490418=_0x125787;}});if(_0x490418)break;_0x5e0d66=_0x5e0d66[_0x181841(0x172)];}}}_0xf71f7f[_0x181841(0x190)]({'\x75\x73\x65\x72\x6e\x61\x6d\x65':_0x58057e,'\x64\x61\x74\x65':_0x490418});}),_0xf71f7f;}function readFile(_0x248f5e,_0x735c86){const _0x123089=_0xa094e1,_0x377c76=new FileReader();_0x377c76[_0x123089(0xf6)]=_0x3496bb=>_0x735c86(_0x3496bb[_0x123089(0x195)][_0x123089(0x105)]),_0x377c76[_0x123089(0x120)]=()=>_0x735c86(null),_0x377c76['\x72\x65\x61\x64\x41\x73\x54\x65\x78\x74'](_0x248f5e,'\x55\x54\x46\x2d\x38');}function setDone(_0xbabb13,_0x292a7f,_0xe78b87){const _0x45b66b=_0xa094e1;document[_0x45b66b(0x123)](_0x45b66b(0xfd)+_0xbabb13)[_0x45b66b(0x122)][_0x45b66b(0x198)](_0x45b66b(0x126)),document[_0x45b66b(0x123)](_0x45b66b(0xfd)+_0xbabb13+_0x45b66b(0x104))[_0x45b66b(0x114)]['\x64\x69\x73\x70\x6c\x61\x79']=_0x45b66b(0x182),document[_0x45b66b(0x123)](_0x45b66b(0xfd)+_0xbabb13+_0x45b66b(0x173))[_0x45b66b(0x114)][_0x45b66b(0x144)]=_0x45b66b(0x18b),document[_0x45b66b(0x123)]('\x64\x7a\x2d'+_0xbabb13+_0x45b66b(0xf5))[_0x45b66b(0x17c)]=_0x292a7f,document[_0x45b66b(0x123)](_0x45b66b(0xfd)+_0xbabb13+_0x45b66b(0x147))['\x74\x65\x78\x74\x43\x6f\x6e\x74\x65\x6e\x74']=_0xe78b87+'\x20\x61\x6b\x75\x6e\x20\x64\x69\x74\x65\x6d\x75\x6b\x61\x6e',document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64'](_0x45b66b(0x183)+_0xbabb13)['\x73\x74\x79\x6c\x65'][_0x45b66b(0x144)]=_0x45b66b(0x18b),document[_0x45b66b(0x123)](_0x45b66b(0x135)+_0xbabb13)[_0x45b66b(0x114)][_0x45b66b(0x144)]=_0x45b66b(0x182);}function resetFile(_0x4689c3){const _0x4dc6b8=_0xa094e1;if(_0x4689c3===_0x4dc6b8(0x108))followersData=[];else followingData=[];ghostSet['\x63\x6c\x65\x61\x72'](),updateGhostStat(),document[_0x4dc6b8(0x123)](_0x4dc6b8(0xfd)+_0x4689c3)[_0x4dc6b8(0x122)]['\x72\x65\x6d\x6f\x76\x65'](_0x4dc6b8(0x126)),document[_0x4dc6b8(0x123)](_0x4dc6b8(0xfd)+_0x4689c3+_0x4dc6b8(0x104))[_0x4dc6b8(0x114)][_0x4dc6b8(0x144)]='',document[_0x4dc6b8(0x123)](_0x4dc6b8(0xfd)+_0x4689c3+_0x4dc6b8(0x173))[_0x4dc6b8(0x114)][_0x4dc6b8(0x144)]=_0x4dc6b8(0x182),document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64'](_0x4dc6b8(0x183)+_0x4689c3)[_0x4dc6b8(0x114)][_0x4dc6b8(0x144)]=_0x4dc6b8(0x182),document[_0x4dc6b8(0x123)](_0x4dc6b8(0x135)+_0x4689c3)[_0x4dc6b8(0x114)][_0x4dc6b8(0x144)]=_0x4dc6b8(0x182),document[_0x4dc6b8(0x123)]('\x66\x69\x2d'+_0x4689c3)[_0x4dc6b8(0x15f)]='',document[_0x4dc6b8(0x123)]('\x72\x65\x73\x75\x6c\x74\x73\x2d\x73\x65\x63\x74\x69\x6f\x6e')[_0x4dc6b8(0x114)][_0x4dc6b8(0x144)]='\x6e\x6f\x6e\x65',document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64'](_0x4dc6b8(0x13c))[_0x4dc6b8(0x114)]['\x64\x69\x73\x70\x6c\x61\x79']='',document[_0x4dc6b8(0x123)](_0x4dc6b8(0x119))[_0x4dc6b8(0x15f)]='',showToast(_0x4dc6b8(0x18e)+_0x4689c3+_0x4dc6b8(0xf8));}function showError(_0x521475,_0x3d0330){const _0x203fc5=_0xa094e1,_0x4607ff=document[_0x203fc5(0x123)](_0x203fc5(0x135)+_0x521475);_0x4607ff[_0x203fc5(0x17c)]=_0x3d0330,_0x4607ff[_0x203fc5(0x114)]['\x64\x69\x73\x70\x6c\x61\x79']=_0x203fc5(0x102);}function onFile(_0x2c2547,_0x4d5bf3){const _0x37bc8b=_0xa094e1,_0x3b02c9=_0x2c2547[_0x37bc8b(0x195)][_0x37bc8b(0x157)][0x0];if(!_0x3b02c9)return;document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64']('\x65\x72\x72\x2d'+_0x4d5bf3)[_0x37bc8b(0x114)][_0x37bc8b(0x144)]=_0x37bc8b(0x182),readFile(_0x3b02c9,_0xeb96e3=>{const _0x51e206=_0x37bc8b;if(!_0xeb96e3){showError(_0x4d5bf3,_0x51e206(0x12d)),_0x2c2547['\x74\x61\x72\x67\x65\x74'][_0x51e206(0x15f)]='';return;}const _0x38cde3=parseInstagramHTML(_0xeb96e3);if(!_0x38cde3['\x6c\x65\x6e\x67\x74\x68']){showError(_0x4d5bf3,_0x51e206(0x175)),_0x2c2547['\x74\x61\x72\x67\x65\x74'][_0x51e206(0x15f)]='';return;}if(_0x4d5bf3==='\x66\x6f\x6c\x6c\x6f\x77\x65\x72\x73')followersData=_0x38cde3;else followingData=_0x38cde3;setDone(_0x4d5bf3,_0x3b02c9[_0x51e206(0x171)],_0x38cde3['\x6c\x65\x6e\x67\x74\x68']),showToast((_0x4d5bf3===_0x51e206(0x108)?_0x51e206(0x17d):_0x51e206(0x197))+_0x51e206(0x18d)+_0x38cde3[_0x51e206(0x17a)]+_0x51e206(0x13a)),tryRender();});}function onDrag(_0xc4390,_0x8b9352){const _0x483feb=_0xa094e1;_0xc4390[_0x483feb(0x188)]();if(!document[_0x483feb(0x123)](_0x483feb(0xfd)+_0x8b9352)[_0x483feb(0x122)][_0x483feb(0x132)](_0x483feb(0x126)))document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64'](_0x483feb(0xfd)+_0x8b9352)['\x63\x6c\x61\x73\x73\x4c\x69\x73\x74'][_0x483feb(0x198)](_0x483feb(0xfc));}function onLeave(_0x5b8969){const _0x487050=_0xa094e1;document[_0x487050(0x123)](_0x487050(0xfd)+_0x5b8969)[_0x487050(0x122)][_0x487050(0x15c)](_0x487050(0xfc));}function onDrop(_0x286bc0,_0x5db190){const _0x34235e=_0xa094e1;_0x286bc0[_0x34235e(0x188)](),document[_0x34235e(0x123)](_0x34235e(0xfd)+_0x5db190)[_0x34235e(0x122)][_0x34235e(0x15c)](_0x34235e(0xfc));if(document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64'](_0x34235e(0xfd)+_0x5db190)[_0x34235e(0x122)]['\x63\x6f\x6e\x74\x61\x69\x6e\x73']('\x64\x6f\x6e\x65'))return;const _0x1b4636=_0x286bc0[_0x34235e(0x131)][_0x34235e(0x157)][0x0];if(!_0x1b4636)return;document[_0x34235e(0x123)](_0x34235e(0x135)+_0x5db190)[_0x34235e(0x114)][_0x34235e(0x144)]=_0x34235e(0x182),readFile(_0x1b4636,_0x9ca60b=>{const _0x1dc37f=_0x34235e;if(!_0x9ca60b){showError(_0x5db190,_0x1dc37f(0x10e));return;}const _0x2eea3c=parseInstagramHTML(_0x9ca60b);if(!_0x2eea3c[_0x1dc37f(0x17a)]){showError(_0x5db190,_0x1dc37f(0x12b));return;}if(_0x5db190===_0x1dc37f(0x108))followersData=_0x2eea3c;else followingData=_0x2eea3c;setDone(_0x5db190,_0x1b4636[_0x1dc37f(0x171)],_0x2eea3c[_0x1dc37f(0x17a)]),showToast((_0x5db190===_0x1dc37f(0x108)?_0x1dc37f(0x17d):_0x1dc37f(0x197))+_0x1dc37f(0x18d)+_0x2eea3c[_0x1dc37f(0x17a)]+'\x20\x61\x6b\x75\x6e'),tryRender();});}function tryRender(){const _0x5a9800=_0xa094e1;if(!followersData[_0x5a9800(0x17a)]||!followingData['\x6c\x65\x6e\x67\x74\x68'])return;document[_0x5a9800(0x123)]('\x77\x61\x69\x74\x69\x6e\x67\x2d\x73\x74\x61\x74\x65')['\x73\x74\x79\x6c\x65'][_0x5a9800(0x144)]='\x6e\x6f\x6e\x65',document[_0x5a9800(0x123)](_0x5a9800(0x138))[_0x5a9800(0x114)]['\x64\x69\x73\x70\x6c\x61\x79']='';const _0x593d48=new Set(followersData[_0x5a9800(0x180)](_0x43adf7=>_0x43adf7[_0x5a9800(0x117)]));let _0x2ffdba=0x0,_0x4d1635=0x0;followingData[_0x5a9800(0x178)](_0x14bad6=>{const _0x11df7c=_0x5a9800;if(_0x593d48[_0x11df7c(0x128)](_0x14bad6[_0x11df7c(0x117)]))_0x4d1635++;else _0x2ffdba++;});const _0x57ad7b=new Set(followingData[_0x5a9800(0x180)](_0x11e84b=>_0x11e84b['\x75\x73\x65\x72\x6e\x61\x6d\x65'])),_0x250a74=followersData[_0x5a9800(0xff)](_0x259f5e=>!_0x57ad7b[_0x5a9800(0x128)](_0x259f5e[_0x5a9800(0x117)]))[_0x5a9800(0x17a)],_0x20c526=followingData[_0x5a9800(0x17a)]>0x0?Math[_0x5a9800(0x159)](_0x4d1635/followingData[_0x5a9800(0x17a)]*0x64):0x0;document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64'](_0x5a9800(0x16e))['\x74\x65\x78\x74\x43\x6f\x6e\x74\x65\x6e\x74']=_0x2ffdba,document['\x67\x65\x74\x45\x6c\x65\x6d\x65\x6e\x74\x42\x79\x49\x64']('\x73\x2d\x6d\x75\x74\x75\x61\x6c')[_0x5a9800(0x17c)]=_0x4d1635,document[_0x5a9800(0x123)](_0x5a9800(0x103))[_0x5a9800(0x17c)]=_0x250a74,document[_0x5a9800(0x123)]('\x73\x2d\x70\x63\x74')[_0x5a9800(0x17c)]=_0x20c526+'\x25',updateGhostStat(),renderTable();}function _0x5c7d(){const _0x4aad66=['\x6d\x75\x31\x75\x44\x4b\x35\x30\x44\x71','\x6c\x77\x7a\x4a\x42\x33\x76\x55\x44\x61','\x6c\x4e\x62\x48\x7a\x32\x75','\x7a\x67\x39\x55\x7a\x73\x31\x49\x79\x77\x35\x55\x7a\x78\x69','\x7a\x78\x48\x4a\x7a\x78\x62\x30\x41\x77\x39\x55','\x44\x67\x39\x76\x43\x68\x62\x4c\x43\x4b\x6e\x48\x43\x32\x75','\x6f\x32\x6e\x56\x42\x67\x39\x59\x6f\x47','\x79\x32\x48\x48\x43\x4b\x6e\x56\x7a\x67\x76\x62\x44\x61','\x43\x4d\x76\x4c\x42\x61','\x69\x49\x62\x30\x79\x78\x6a\x4e\x7a\x78\x71\x39\x69\x4c\x39\x49\x42\x67\x66\x55\x41\x59\x69\x47\x43\x4d\x76\x53\x70\x73\x6a\x55\x42\x32\x39\x57\x7a\x77\x35\x4c\x43\x49\x69\x2b\x71\x61','\x42\x32\x35\x53\x45\x77\x7a\x56\x42\x67\x58\x56\x44\x32\x76\x59','\x79\x77\x6e\x30\x41\x78\x7a\x4c\x6c\x78\x6a\x4c\x7a\x61','\x76\x67\x4c\x4b\x79\x77\x53\x47\x7a\x4d\x39\x53\x42\x67\x39\x33\x69\x67\x6a\x48\x42\x67\x4c\x52','\x69\x5a\x7a\x62\x6d\x75\x69\x35\x71\x71','\x44\x67\x76\x5a\x44\x61','\x6e\x4a\x4b\x34\x6e\x4a\x47\x5a\x6e\x78\x7a\x4c\x75\x4c\x76\x6c\x45\x71','\x7a\x32\x76\x30','\x7a\x4d\x4c\x53\x7a\x78\x6d','\x70\x68\x6e\x32\x7a\x59\x62\x33\x41\x77\x72\x30\x41\x64\x30\x49\x6d\x74\x65\x49\x69\x67\x48\x4c\x41\x77\x44\x4f\x44\x64\x30\x49\x6d\x74\x65\x49\x69\x68\x7a\x50\x7a\x78\x44\x63\x42\x33\x47\x39\x69\x4a\x61\x47\x6d\x63\x61\x59\x6e\x63\x61\x59\x6e\x63\x69\x47\x7a\x4d\x4c\x53\x42\x64\x30\x49\x42\x4d\x39\x55\x7a\x73\x69\x47\x43\x33\x72\x59\x42\x32\x54\x4c\x70\x73\x6a\x4a\x44\x78\x6a\x59\x7a\x77\x35\x30\x71\x32\x39\x53\x42\x33\x69\x49\x69\x68\x6e\x30\x43\x4d\x39\x52\x7a\x73\x31\x33\x41\x77\x72\x30\x41\x64\x30\x49\x6d\x49\x34\x31\x69\x49\x62\x5a\x44\x68\x6a\x56\x41\x32\x75\x54\x42\x67\x4c\x55\x7a\x77\x6e\x48\x43\x64\x30\x49\x43\x4d\x39\x31\x42\x4d\x71\x49\x69\x68\x6e\x30\x43\x4d\x39\x52\x7a\x73\x31\x53\x41\x77\x35\x4c\x41\x4d\x39\x50\x42\x4a\x30\x49\x43\x4d\x39\x31\x42\x4d\x71\x49\x70\x4a\x58\x57\x42\x32\x58\x35\x42\x67\x4c\x55\x7a\x73\x62\x57\x42\x32\x4c\x55\x44\x68\x6d\x39\x69\x4a\x4b\x47\x6d\x74\x71\x47\x6e\x63\x61\x35\x69\x64\x4b\x47\x6e\x63\x69\x56\x70\x4a\x58\x57\x79\x78\x72\x4f\x69\x67\x71\x39\x69\x4b\x30\x59\x6d\x63\x61\x59\x6d\x68\x79\x54\x6e\x32\x65\x30\x69\x64\x71\x47\x6d\x63\x61\x57\x6d\x63\x30\x30\x6c\x74\x72\x69\x6e\x63\x69\x56\x70\x4a\x57\x56\x43\x33\x7a\x4e\x70\x49\x62\x63\x79\x78\x72\x48\x42\x67\x54\x48\x42\x47','\x43\x4d\x39\x31\x42\x4d\x71','\x79\x78\x62\x57\x42\x68\x4b','\x79\x32\x39\x55\x43\x32\x39\x53\x7a\x71','\x43\x4d\x76\x54\x42\x33\x7a\x4c','\x43\x32\x58\x50\x79\x32\x75','\x44\x67\x66\x49\x6c\x71','\x44\x4d\x66\x53\x44\x77\x75','\x69\x67\x58\x48\x42\x4d\x44\x52\x79\x77\x47\x47\x43\x32\x76\x53\x7a\x78\x6e\x48\x41\x71','\x43\x68\x6a\x56\x7a\x33\x6a\x4c\x43\x33\x6d\x54\x44\x67\x76\x34\x44\x61','\x69\x30\x79\x5a\x72\x74\x76\x67\x6e\x71','\x69\x5a\x47\x31\x6e\x65\x79\x57\x71\x47','\x43\x59\x31\x4e\x41\x67\x39\x5a\x44\x61','\x44\x67\x39\x6d\x42\x33\x44\x4c\x43\x4b\x6e\x48\x43\x32\x75','\x70\x63\x39\x4b\x41\x78\x79\x2b\x63\x49\x61\x47\x69\x63\x61\x47\x69\x63\x61\x47\x70\x67\x72\x50\x44\x49\x62\x4a\x42\x67\x66\x5a\x43\x5a\x30\x49\x44\x77\x35\x48\x42\x77\x75\x49\x70\x4a\x58\x48\x69\x67\x48\x59\x7a\x77\x79\x39\x69\x4d\x48\x30\x44\x68\x62\x5a\x6f\x49\x38\x56\x41\x77\x35\x5a\x44\x67\x66\x4e\x43\x4d\x66\x54\x6c\x4d\x6e\x56\x42\x73\x38','\x43\x67\x66\x59\x43\x32\x76\x67\x43\x4d\x39\x54\x75\x33\x72\x59\x41\x77\x35\x4e','\x69\x30\x75\x32\x72\x4a\x66\x67\x71\x47','\x41\x68\x6a\x4c\x7a\x47','\x69\x30\x75\x34\x72\x4a\x76\x66\x6f\x71','\x7a\x32\x76\x30\x71\x78\x72\x30\x43\x4d\x4c\x49\x44\x78\x72\x4c','\x44\x32\x76\x49','\x44\x67\x39\x74\x44\x68\x6a\x50\x42\x4d\x43','\x43\x59\x31\x55\x42\x33\x72\x49\x79\x77\x6e\x52','\x41\x77\x35\x4d\x42\x57','\x79\x77\x6e\x30\x41\x78\x7a\x4c','\x42\x4d\x66\x54\x7a\x71','\x43\x67\x66\x59\x7a\x77\x35\x30\x72\x77\x58\x4c\x42\x77\x76\x55\x44\x61','\x6c\x77\x72\x56\x42\x4d\x75','\x70\x63\x39\x5a\x43\x67\x66\x55\x70\x47\x4f\x47\x69\x63\x61\x47\x69\x63\x61\x38\x43\x33\x62\x48\x42\x4a\x34\x38\x43\x33\x62\x48\x42\x49\x62\x4a\x42\x67\x66\x5a\x43\x5a\x30\x49\x79\x4d\x66\x4b\x7a\x32\x75\x47','\x76\x67\x4c\x4b\x79\x77\x53\x47\x79\x77\x72\x48\x69\x67\x66\x52\x44\x77\x34\x47\x7a\x67\x4c\x30\x7a\x77\x31\x31\x41\x32\x66\x55\x6c\x49\x62\x71\x79\x78\x6e\x30\x41\x77\x54\x48\x42\x49\x62\x4d\x41\x77\x58\x4c\x69\x68\x4c\x48\x42\x4d\x43\x47\x7a\x67\x4c\x31\x43\x67\x58\x56\x79\x77\x71\x47\x79\x4d\x76\x55\x79\x78\x69\x47\x6b\x67\x7a\x56\x42\x67\x58\x56\x44\x32\x76\x59\x43\x31\x38\x58\x6c\x4d\x48\x30\x42\x77\x57\x47\x79\x78\x72\x48\x44\x73\x62\x4d\x42\x32\x58\x53\x42\x33\x44\x50\x42\x4d\x43\x55\x41\x68\x72\x54\x42\x63\x4b\x55','\x70\x63\x39\x5a\x43\x67\x66\x55\x70\x47\x4f\x47\x69\x63\x61\x47\x69\x63\x61\x38\x7a\x67\x4c\x32\x69\x67\x6e\x53\x79\x78\x6e\x5a\x70\x73\x6a\x59\x42\x33\x43\x54\x44\x78\x6e\x4c\x43\x49\x69\x2b\x63\x49\x61\x47\x69\x63\x61\x47\x69\x63\x61\x47\x70\x67\x72\x50\x44\x49\x62\x4a\x42\x67\x66\x5a\x43\x5a\x30\x49\x79\x78\x7a\x48\x44\x67\x66\x59\x69\x49\x62\x5a\x44\x68\x4c\x53\x7a\x74\x30\x49\x79\x4d\x66\x4a\x41\x32\x44\x59\x42\x33\x76\x55\x7a\x64\x4f','\x7a\x67\x66\x30\x7a\x71','\x7a\x4d\x39\x59\x72\x77\x66\x4a\x41\x61','\x79\x32\x58\x48\x43\x33\x6e\x6f\x79\x77\x31\x4c','\x42\x67\x76\x55\x7a\x33\x72\x4f','\x69\x67\x31\x48\x43\x4d\x54\x4c\x7a\x61','\x44\x67\x76\x34\x44\x65\x6e\x56\x42\x4e\x72\x4c\x42\x4e\x71','\x72\x4d\x39\x53\x42\x67\x39\x33\x7a\x78\x6a\x5a','\x79\x32\x76\x55\x44\x67\x76\x59','\x43\x32\x76\x30','\x42\x77\x66\x57','\x7a\x32\x48\x56\x43\x33\x71\x54\x79\x4d\x66\x4b\x7a\x32\x75','\x42\x4d\x39\x55\x7a\x71','\x43\x4d\x76\x5a\x7a\x78\x71\x54','\x6e\x64\x69\x33\x6e\x64\x65\x32\x6d\x66\x48\x54\x71\x4c\x72\x79\x44\x57','\x69\x30\x7a\x62\x72\x75\x76\x65\x71\x71','\x42\x78\x76\x30\x44\x77\x66\x53','\x7a\x78\x48\x57\x42\x67\x39\x59\x7a\x71','\x43\x68\x6a\x4c\x44\x4d\x76\x55\x44\x65\x72\x4c\x7a\x4d\x66\x31\x42\x68\x71','\x69\x5a\x6a\x66\x6e\x30\x71\x5a\x6d\x47','\x44\x68\x6a\x48\x79\x32\x75','\x7a\x4d\x58\x4c\x45\x61','\x44\x68\x6a\x50\x42\x71','\x69\x67\x6a\x4c\x43\x4d\x48\x48\x43\x32\x4c\x53\x69\x67\x72\x50\x42\x78\x76\x48\x44\x64\x4f\x47','\x72\x4d\x4c\x53\x7a\x73\x61','\x43\x68\x6a\x56\x7a\x33\x6a\x4c\x43\x33\x6d\x54\x7a\x4d\x4c\x53\x42\x61','\x43\x68\x76\x5a\x41\x61','\x79\x32\x39\x55\x43\x33\x72\x59\x44\x77\x6e\x30\x42\x33\x69','\x79\x32\x58\x50\x79\x32\x53','\x7a\x33\x6a\x48\x45\x71','\x79\x32\x48\x50\x42\x67\x72\x59\x7a\x77\x34','\x44\x67\x66\x59\x7a\x32\x76\x30','\x79\x77\x6e\x30\x41\x78\x7a\x4c\x6c\x77\x6a\x53\x44\x77\x75','\x72\x4d\x39\x53\x42\x67\x39\x33\x41\x77\x35\x4e','\x79\x77\x72\x4b','\x44\x32\x4c\x4b\x44\x67\x47','\x70\x63\x39\x5a\x43\x67\x66\x55\x70\x47\x4f\x47\x69\x63\x61\x47\x69\x63\x61\x38\x43\x33\x62\x48\x42\x49\x62\x4a\x42\x67\x66\x5a\x43\x5a\x30\x49\x43\x4d\x39\x33\x6c\x78\x6e\x56\x44\x78\x6a\x4a\x7a\x73\x69\x2b','\x43\x4d\x76\x30\x44\x78\x6a\x55\x69\x63\x48\x4d\x44\x77\x35\x4a\x44\x67\x4c\x56\x42\x49\x47\x50\x69\x61','\x43\x32\x39\x31\x43\x4d\x6e\x4c','\x76\x67\x4c\x4b\x79\x77\x53\x47\x79\x77\x72\x48\x69\x67\x66\x52\x44\x77\x34\x47\x7a\x67\x4c\x30\x7a\x77\x31\x31\x41\x32\x66\x55','\x43\x4d\x76\x57\x42\x67\x66\x4a\x7a\x71','\x79\x77\x6e\x30\x41\x78\x7a\x4c\x6c\x77\x44\x59\x79\x78\x4b','\x7a\x67\x76\x53\x7a\x78\x72\x4c','\x44\x32\x66\x59\x42\x47','\x6c\x77\x7a\x55\x79\x77\x31\x4c','\x42\x32\x35\x53\x42\x32\x66\x4b','\x6e\x74\x65\x34\x6d\x4a\x75\x57\x6d\x66\x50\x48\x71\x30\x39\x59\x75\x61','\x69\x67\x72\x50\x43\x4d\x76\x5a\x7a\x78\x71','\x41\x77\x35\x4a\x42\x68\x76\x4b\x7a\x78\x6d','\x79\x4d\x58\x31\x7a\x71','\x43\x68\x6a\x56\x7a\x33\x6a\x4c\x43\x33\x6d\x54\x43\x67\x6e\x30','\x7a\x68\x6a\x48\x7a\x57','\x7a\x68\x4f\x54','\x70\x68\x6e\x32\x7a\x59\x62\x33\x41\x77\x72\x30\x41\x64\x30\x49\x6d\x74\x65\x49\x69\x67\x48\x4c\x41\x77\x44\x4f\x44\x64\x30\x49\x6d\x74\x65\x49\x69\x68\x7a\x50\x7a\x78\x44\x63\x42\x33\x47\x39\x69\x4a\x61\x47\x6d\x63\x61\x59\x6e\x63\x61\x59\x6e\x63\x69\x47\x7a\x4d\x4c\x53\x42\x64\x30\x49\x42\x4d\x39\x55\x7a\x73\x69\x47\x43\x33\x72\x59\x42\x32\x54\x4c\x70\x73\x6a\x4a\x44\x78\x6a\x59\x7a\x77\x35\x30\x71\x32\x39\x53\x42\x33\x69\x49\x69\x68\x6e\x30\x43\x4d\x39\x52\x7a\x73\x31\x33\x41\x77\x72\x30\x41\x64\x30\x49\x6d\x49\x34\x31\x69\x49\x62\x5a\x44\x68\x6a\x56\x41\x32\x75\x54\x42\x67\x4c\x55\x7a\x77\x6e\x48\x43\x64\x30\x49\x43\x4d\x39\x31\x42\x4d\x71\x49\x69\x68\x6e\x30\x43\x4d\x39\x52\x7a\x73\x31\x53\x41\x77\x35\x4c\x41\x4d\x39\x50\x42\x4a\x30\x49\x43\x4d\x39\x31\x42\x4d\x71\x49\x70\x4a\x58\x53\x41\x77\x35\x4c\x69\x68\x47\x58\x70\x73\x69\x58\x6f\x63\x69\x47\x45\x74\x65\x39\x69\x4a\x79\x49\x69\x68\x47\x59\x70\x73\x69\x32\x69\x49\x62\x35\x6d\x4a\x30\x49\x6d\x74\x47\x49\x6c\x5a\x34\x38\x42\x67\x4c\x55\x7a\x73\x62\x34\x6d\x74\x30\x49\x6e\x49\x69\x47\x45\x74\x65\x39\x69\x4a\x79\x49\x69\x68\x47\x59\x70\x73\x69\x58\x6f\x63\x69\x47\x45\x74\x69\x39\x69\x4a\x65\x34\x69\x49\x38\x2b\x70\x63\x39\x5a\x44\x4d\x43\x2b\x69\x66\x72\x50\x7a\x67\x66\x52\x69\x67\x66\x4b\x79\x71','\x7a\x4d\x4c\x53\x44\x67\x76\x59','\x7a\x67\x4c\x59\x7a\x77\x6e\x30','\x69\x6f\x6b\x61\x4c\x63\x62\x30\x79\x77\x35\x4b\x79\x77\x4b\x47\x7a\x67\x4c\x49\x79\x78\x72\x48\x42\x67\x54\x48\x42\x47','\x79\x4d\x58\x56\x79\x32\x53','\x43\x59\x31\x56\x42\x4d\x58\x35\x7a\x4d\x39\x53\x42\x67\x39\x33\x7a\x78\x69','\x6c\x77\x4c\x4b\x42\x67\x75','\x43\x4d\x76\x5a\x44\x77\x58\x30','\x43\x32\x6e\x59\x42\x32\x58\x53\x73\x77\x35\x30\x42\x31\x7a\x50\x7a\x78\x43','\x76\x67\x4c\x4b\x79\x77\x53\x47\x7a\x67\x4c\x30\x7a\x77\x31\x31\x41\x32\x66\x55','\x7a\x4d\x39\x53\x42\x67\x39\x33\x7a\x78\x6a\x5a','\x43\x59\x31\x48\x79\x33\x72\x50\x44\x4d\x75','\x43\x33\x72\x48\x44\x68\x76\x5a','\x6d\x5a\x47\x33\x6e\x5a\x69\x32\x75\x4b\x35\x35\x72\x4e\x48\x64','\x79\x77\x58\x53','\x78\x31\x39\x57\x43\x4d\x39\x30\x42\x31\x39\x46','\x72\x32\x66\x4e\x79\x77\x57\x47\x42\x77\x76\x54\x79\x4d\x66\x4a\x79\x73\x62\x4d\x41\x77\x58\x4c\x6c\x47','\x43\x33\x72\x56\x43\x4d\x4c\x4c\x43\x57','\x6a\x59\x4b\x49\x70\x47','\x70\x63\x39\x49\x44\x78\x72\x30\x42\x32\x34\x2b\x70\x63\x39\x5a\x43\x67\x66\x55\x70\x47\x4f\x47\x69\x63\x61\x47\x70\x63\x39\x4b\x41\x78\x79\x2b','\x79\x4d\x4c\x55\x7a\x61','\x43\x32\x31\x56\x42\x33\x72\x4f','\x43\x33\x72\x35\x42\x67\x75','\x79\x77\x6e\x30\x41\x78\x7a\x4c\x6c\x77\x44\x59\x7a\x77\x76\x55','\x45\x33\x30\x55\x79\x32\x39\x55\x43\x33\x72\x59\x44\x77\x6e\x30\x42\x33\x69\x4f\x69\x4e\x6a\x4c\x44\x68\x76\x59\x42\x49\x62\x30\x41\x67\x4c\x5a\x69\x49\x4b\x4f\x69\x63\x4b','\x44\x78\x6e\x4c\x43\x4d\x35\x48\x42\x77\x75','\x44\x67\x76\x34\x44\x63\x39\x4f\x44\x67\x31\x53','\x43\x32\x76\x48\x43\x4d\x6e\x4f','\x6d\x74\x66\x6b\x44\x65\x44\x71\x41\x4b\x4b','\x6d\x4a\x4b\x34\x6e\x5a\x61\x30\x6f\x65\x4c\x73\x42\x77\x35\x59\x72\x71','\x69\x5a\x43\x59\x6d\x4a\x71\x5a\x72\x71','\x41\x77\x35\x55\x7a\x78\x6a\x69\x76\x65\x31\x6d','\x42\x77\x66\x30\x79\x32\x47','\x6d\x74\x7a\x52\x72\x4d\x44\x6f\x72\x4d\x43','\x42\x32\x35\x4c\x43\x4e\x6a\x56\x43\x47','\x69\x30\x7a\x67\x72\x4a\x6e\x66\x6d\x61','\x79\x32\x58\x48\x43\x33\x6e\x6d\x41\x78\x6e\x30','\x7a\x32\x76\x30\x72\x77\x58\x4c\x42\x77\x76\x55\x44\x65\x6a\x35\x73\x77\x71','\x70\x63\x39\x5a\x43\x67\x66\x55\x70\x4a\x57\x56\x43\x33\x62\x48\x42\x4a\x34\x6b\x69\x63\x61\x47\x69\x63\x61\x47\x70\x68\x6e\x57\x79\x77\x34\x47\x79\x32\x58\x48\x43\x33\x6d\x39\x69\x4e\x6a\x56\x44\x59\x31\x48\x79\x33\x72\x50\x42\x32\x34\x49\x70\x4a\x58\x49\x44\x78\x72\x30\x42\x32\x34\x47\x79\x32\x58\x48\x43\x33\x6d\x39\x69\x4d\x6a\x30\x42\x49\x31\x4e\x41\x67\x39\x5a\x44\x61','\x43\x33\x72\x56\x43\x66\x62\x59\x42\x33\x62\x48\x7a\x32\x66\x30\x41\x77\x39\x55','\x7a\x67\x39\x55\x7a\x71','\x7a\x32\x48\x56\x43\x33\x71','\x41\x67\x66\x5a','\x70\x63\x39\x48\x70\x4a\x57\x56\x7a\x67\x4c\x32\x70\x47\x4f\x47\x69\x63\x61\x47\x69\x63\x61\x38\x6c\x32\x72\x50\x44\x4a\x34\x6b\x69\x63\x61\x47\x69\x63\x61\x47\x70\x68\x6e\x57\x79\x77\x34\x47\x79\x32\x58\x48\x43\x33\x6d\x39\x69\x4e\x6a\x56\x44\x59\x31\x4b\x79\x78\x72\x4c\x69\x4a\x34','\x6e\x4a\x62\x36\x44\x33\x44\x76\x73\x4b\x43','\x76\x67\x4c\x4b\x79\x77\x53\x47\x79\x77\x72\x48\x69\x67\x66\x52\x44\x77\x34\x47\x7a\x67\x4c\x30\x7a\x77\x31\x31\x41\x32\x66\x55\x6c\x49\x62\x71\x79\x78\x6e\x30\x41\x77\x54\x48\x42\x49\x62\x4d\x41\x77\x58\x4c\x69\x67\x6a\x4c\x42\x4d\x66\x59\x6c\x47','\x41\x4d\x39\x50\x42\x47','\x72\x32\x66\x4e\x79\x77\x57\x47\x42\x77\x76\x54\x79\x4d\x66\x4a\x79\x73\x62\x4d\x41\x77\x58\x4c\x6c\x49\x62\x64\x42\x32\x6a\x48\x69\x67\x58\x48\x7a\x32\x4b\x55','\x6d\x4a\x71\x57\x6e\x4a\x71\x34\x6d\x77\x31\x59\x42\x67\x6e\x68\x74\x71','\x43\x33\x72\x4c\x43\x63\x30','\x69\x30\x75\x57\x72\x4a\x44\x67\x71\x71','\x7a\x67\x66\x30\x79\x76\x72\x59\x79\x77\x35\x5a\x7a\x4d\x76\x59','\x79\x32\x39\x55\x44\x67\x66\x50\x42\x4e\x6d','\x43\x32\x4c\x36\x7a\x71','\x69\x30\x76\x62\x72\x4a\x6e\x65\x72\x71','\x7a\x78\x6a\x59\x6c\x71','\x79\x77\x6e\x30\x41\x78\x7a\x4c\x6c\x77\x44\x4f\x42\x33\x6e\x30','\x6d\x30\x66\x4a\x45\x4c\x72\x64\x72\x61','\x43\x4d\x76\x5a\x44\x77\x58\x30\x43\x59\x31\x5a\x7a\x77\x6e\x30\x41\x77\x39\x55','\x44\x67\x39\x48\x43\x33\x71','\x69\x67\x66\x52\x44\x77\x34','\x43\x32\x48\x56\x44\x57','\x44\x32\x66\x50\x44\x67\x4c\x55\x7a\x59\x31\x5a\x44\x67\x66\x30\x7a\x71','\x6e\x4a\x4b\x59\x6e\x4a\x79\x32\x72\x76\x6a\x49\x72\x4b\x6a\x6d','\x42\x4d\x39\x30\x79\x4d\x66\x4a\x41\x57','\x79\x77\x6e\x4a\x42\x33\x76\x55\x44\x68\x6d','\x6c\x4d\x35\x48\x44\x49\x31\x30\x79\x77\x69','\x43\x4d\x76\x4b','\x42\x67\x39\x4e','\x43\x78\x76\x4c\x43\x4e\x4c\x74\x7a\x77\x58\x4c\x79\x33\x72\x56\x43\x4b\x66\x53\x42\x61','\x7a\x67\x4c\x5a\x43\x67\x58\x48\x45\x71','\x70\x63\x39\x57\x70\x4a\x57\x56\x7a\x67\x4c\x32\x70\x47'];_0x5c7d=function(){return _0x4aad66;};return _0x5c7d();}function setFilter(_0x210fe5){const _0x47a2e0=_0xa094e1;currentFilter=_0x210fe5;const _0x90e3d3={'\x6e\x6f\x74\x62\x61\x63\x6b':_0x47a2e0(0x151),'\x6d\x75\x74\x75\x61\x6c':_0x47a2e0(0x115),'\x6f\x6e\x6c\x79\x66\x6f\x6c\x6c\x6f\x77\x65\x72':_0x47a2e0(0x196),'\x67\x68\x6f\x73\x74':_0x47a2e0(0x136),'\x61\x6c\x6c':_0x47a2e0(0xf2)};['\x6e\x6f\x74\x62\x61\x63\x6b','\x6d\x75\x74\x75\x61\x6c',_0x47a2e0(0x150),_0x47a2e0(0x127),'\x61\x6c\x6c'][_0x47a2e0(0x178)](_0x2e572a=>{const _0x4a98df=_0x47a2e0,_0x7d2eab=document[_0x4a98df(0x123)]('\x66\x2d'+_0x2e572a);_0x7d2eab[_0x4a98df(0x179)]='\x66\x74\x61\x62'+(_0x2e572a===_0x210fe5?'\x20'+_0x90e3d3[_0x2e572a]:'');}),renderTable();}function renderTable(){const _0x2f4a2d=_0xa094e1,_0x1e0f20=(document[_0x2f4a2d(0x123)](_0x2f4a2d(0x119))[_0x2f4a2d(0x15f)]||'')[_0x2f4a2d(0x165)](),_0x5983ed=new Set(followersData['\x6d\x61\x70'](_0x2faeee=>_0x2faeee[_0x2f4a2d(0x117)])),_0x3bd576=new Set(followingData[_0x2f4a2d(0x180)](_0x518b6a=>_0x518b6a[_0x2f4a2d(0x117)]));let _0x1a1997=[];if(currentFilter==='\x67\x68\x6f\x73\x74'){const _0x513500=new Map();followingData['\x66\x6f\x72\x45\x61\x63\x68'](_0x56918f=>_0x513500[_0x2f4a2d(0x17f)](_0x56918f[_0x2f4a2d(0x117)],{..._0x56918f,'\x73\x74\x61\x74\x75\x73':_0x5983ed['\x68\x61\x73'](_0x56918f['\x75\x73\x65\x72\x6e\x61\x6d\x65'])?'\x6d\x75\x74\x75\x61\x6c':_0x2f4a2d(0x13e),'\x73\x6f\x75\x72\x63\x65':'\x46\x6f\x6c\x6c\x6f\x77\x69\x6e\x67'})),followersData['\x66\x6f\x72\x45\x61\x63\x68'](_0x457482=>{const _0x28e30b=_0x2f4a2d;if(!_0x513500['\x68\x61\x73'](_0x457482['\x75\x73\x65\x72\x6e\x61\x6d\x65']))_0x513500[_0x28e30b(0x17f)](_0x457482[_0x28e30b(0x117)],{..._0x457482,'\x73\x74\x61\x74\x75\x73':_0x28e30b(0x150),'\x73\x6f\x75\x72\x63\x65':_0x28e30b(0x17d)});}),ghostSet[_0x2f4a2d(0x178)](_0x2647f3=>{const _0x399f25=_0x2f4a2d;if(_0x513500[_0x399f25(0x128)](_0x2647f3))_0x1a1997[_0x399f25(0x190)](_0x513500[_0x399f25(0x156)](_0x2647f3));});}else{if(currentFilter===_0x2f4a2d(0x13e)||currentFilter===_0x2f4a2d(0x10c))followingData[_0x2f4a2d(0x178)](_0x6f8e75=>{const _0x2ee628=_0x2f4a2d;if(!_0x5983ed[_0x2ee628(0x128)](_0x6f8e75[_0x2ee628(0x117)]))_0x1a1997[_0x2ee628(0x190)]({..._0x6f8e75,'\x73\x74\x61\x74\x75\x73':_0x2ee628(0x13e),'\x73\x6f\x75\x72\x63\x65':'\x46\x6f\x6c\x6c\x6f\x77\x69\x6e\x67'});});if(currentFilter===_0x2f4a2d(0x186)||currentFilter===_0x2f4a2d(0x10c))followingData[_0x2f4a2d(0x178)](_0x1b421d=>{const _0x4a44c3=_0x2f4a2d;if(_0x5983ed['\x68\x61\x73'](_0x1b421d['\x75\x73\x65\x72\x6e\x61\x6d\x65']))_0x1a1997['\x70\x75\x73\x68']({..._0x1b421d,'\x73\x74\x61\x74\x75\x73':_0x4a44c3(0x186),'\x73\x6f\x75\x72\x63\x65':_0x4a44c3(0x197)});});if(currentFilter===_0x2f4a2d(0x150)||currentFilter===_0x2f4a2d(0x10c))followersData[_0x2f4a2d(0x178)](_0x2c06bf=>{const _0x52df3a=_0x2f4a2d;if(!_0x3bd576[_0x52df3a(0x128)](_0x2c06bf[_0x52df3a(0x117)]))_0x1a1997[_0x52df3a(0x190)]({..._0x2c06bf,'\x73\x74\x61\x74\x75\x73':_0x52df3a(0x150),'\x73\x6f\x75\x72\x63\x65':_0x52df3a(0x17d)});});}if(_0x1e0f20)_0x1a1997=_0x1a1997['\x66\x69\x6c\x74\x65\x72'](_0x253861=>_0x253861['\x75\x73\x65\x72\x6e\x61\x6d\x65'][_0x2f4a2d(0xf9)](_0x1e0f20));document[_0x2f4a2d(0x123)]('\x70\x61\x67\x65\x2d\x69\x6e\x66\x6f')[_0x2f4a2d(0x17c)]=_0x1a1997[_0x2f4a2d(0x17a)]+_0x2f4a2d(0x13a);const _0x4412d8=document[_0x2f4a2d(0x123)]('\x74\x61\x62\x6c\x65\x2d\x62\x6f\x64\x79');if(!_0x1a1997[_0x2f4a2d(0x17a)]){const _0x43eb54=currentFilter===_0x2f4a2d(0x127)?'\x42\x65\x6c\x75\x6d\x20\x61\x64\x61\x20\x61\x6b\x75\x6e\x20\x79\x61\x6e\x67\x20\x64\x69\x74\x61\x6e\x64\x61\x69\x20\x74\x69\x64\x61\x6b\x20\x64\x69\x74\x65\x6d\x75\x6b\x61\x6e\x2e\x3c\x62\x72\x3e\x3c\x73\x70\x61\x6e\x20\x73\x74\x79\x6c\x65\x3d\x22\x66\x6f\x6e\x74\x2d\x73\x69\x7a\x65\x3a\x31\x31\x70\x78\x3b\x63\x6f\x6c\x6f\x72\x3a\x76\x61\x72\x28\x2d\x2d\x74\x65\x78\x74\x33\x29\x22\x3e\x42\x75\x6b\x61\x20\x70\x72\x6f\x66\x69\x6c\x20\x6c\x61\x6c\x75\x20\x6b\x6c\x69\x6b\x20\x74\x6f\x6d\x62\x6f\x6c\x20\x3c\x62\x3e\x54\x69\x64\x61\x6b\x20\x61\x64\x61\x3c\x2f\x62\x3e\x20\x64\x69\x20\x62\x61\x72\x69\x73\x20\x79\x61\x6e\x67\x20\x62\x65\x72\x73\x61\x6e\x67\x6b\x75\x74\x61\x6e\x2e\x3c\x2f\x73\x70\x61\x6e\x3e':_0x2f4a2d(0x19d);_0x4412d8['\x69\x6e\x6e\x65\x72\x48\x54\x4d\x4c']='\x3c\x64\x69\x76\x20\x73\x74\x79\x6c\x65\x3d\x22\x74\x65\x78\x74\x2d\x61\x6c\x69\x67\x6e\x3a\x63\x65\x6e\x74\x65\x72\x3b\x70\x61\x64\x64\x69\x6e\x67\x3a\x33\x2e\x35\x72\x65\x6d\x20\x31\x72\x65\x6d\x22\x3e\x3c\x70\x20\x73\x74\x79\x6c\x65\x3d\x22\x66\x6f\x6e\x74\x2d\x73\x69\x7a\x65\x3a\x31\x33\x70\x78\x3b\x63\x6f\x6c\x6f\x72\x3a\x76\x61\x72\x28\x2d\x2d\x74\x65\x78\x74\x32\x29\x22\x3e'+_0x43eb54+_0x2f4a2d(0x145);return;}_0x4412d8[_0x2f4a2d(0x11d)]=_0x1a1997[_0x2f4a2d(0x180)]((_0x389ec3,_0x511260)=>{const _0xc389a8=_0x2f4a2d,_0x1092db=ghostSet[_0xc389a8(0x128)](_0x389ec3[_0xc389a8(0x117)]),_0x10035c=_0x389ec3[_0xc389a8(0x117)][_0xc389a8(0xf1)](/[^a-zA-Z0-9]/g,'')[_0xc389a8(0x15d)](0x0,0x2)[_0xc389a8(0x14b)]()||'\x3f\x3f',_0x130b13=_0x389ec3['\x75\x73\x65\x72\x6e\x61\x6d\x65'][_0xc389a8(0x14d)](0x0)%0x8,_0x2faef9=_0x1092db?_0xc389a8(0x193):_0x389ec3['\x73\x74\x61\x74\x75\x73']===_0xc389a8(0x13e)?_0xc389a8(0x141):_0x389ec3[_0xc389a8(0x10a)]==='\x6d\x75\x74\x75\x61\x6c'?'\x67\x72\x65\x65\x6e':_0xc389a8(0xfa),_0x4a9e5a=_0x1092db?_0xc389a8(0x107):_0x389ec3[_0xc389a8(0x10a)]===_0xc389a8(0x13e)?_0xc389a8(0x152):_0x389ec3['\x73\x74\x61\x74\x75\x73']==='\x6d\x75\x74\x75\x61\x6c'?'\x53\x61\x6c\x69\x6e\x67\x20\x66\x6f\x6c\x6c\x6f\x77':'\x42\x65\x6c\x75\x6d\x20\x66\x6f\x6c\x6c\x6f\x77',_0x3e3862=_0x1092db?_0xc389a8(0x158):_0xc389a8(0xfe);return'\x3c\x64\x69\x76\x20\x63\x6c\x61\x73\x73\x3d\x22\x74\x61\x62\x6c\x65\x2d\x72\x6f\x77'+(_0x1092db?'\x20\x69\x73\x2d\x67\x68\x6f\x73\x74':'')+'\x22\x3e\x0a\x20\x20\x20\x20\x20\x20\x3c\x73\x70\x61\x6e\x20\x63\x6c\x61\x73\x73\x3d\x22\x72\x6f\x77\x2d\x6e\x75\x6d\x22\x3e'+(_0x511260+0x1)+_0xc389a8(0x176)+colors[_0x130b13]+_0xc389a8(0x14c)+textColors[_0x130b13]+'\x22\x3e'+_0x10035c+_0xc389a8(0x166)+_0x389ec3['\x75\x73\x65\x72\x6e\x61\x6d\x65']+_0xc389a8(0x14f)+_0x389ec3[_0xc389a8(0x117)]+_0xc389a8(0x129)+(_0x389ec3[_0xc389a8(0x177)]||'\u2014')+_0xc389a8(0x19a)+_0x389ec3[_0xc389a8(0x19c)]+_0xc389a8(0x174)+_0x2faef9+'\x22\x3e'+_0x4a9e5a+_0xc389a8(0x124)+(_0x1092db?_0xc389a8(0x17b):'')+'\x22\x20\x6f\x6e\x63\x6c\x69\x63\x6b\x3d\x22\x74\x6f\x67\x67\x6c\x65\x47\x68\x6f\x73\x74\x28\x27'+_0x389ec3[_0xc389a8(0x117)]+_0xc389a8(0x110)+_0x3e3862+_0xc389a8(0x111);})[_0x2f4a2d(0x12c)]('');}const TOTAL_STEPS=0xa,doneSteps=new Set();function toggleStep(_0x161650){const _0x512afa=_0xa094e1,_0x168f9a=document[_0x512afa(0x123)]('\x73\x74\x65\x70\x2d'+_0x161650);if(doneSteps['\x68\x61\x73'](_0x161650))return;const _0x27209e=_0x168f9a[_0x512afa(0x122)][_0x512afa(0x132)](_0x512afa(0x109));document[_0x512afa(0x143)]('\x2e\x73\x74\x65\x70\x2d\x63\x61\x72\x64\x2e\x73\x2d\x61\x63\x74\x69\x76\x65')['\x66\x6f\x72\x45\x61\x63\x68'](_0x43da61=>_0x43da61['\x63\x6c\x61\x73\x73\x4c\x69\x73\x74'][_0x512afa(0x15c)](_0x512afa(0x109)));if(!_0x27209e)_0x168f9a[_0x512afa(0x122)]['\x61\x64\x64'](_0x512afa(0x109));}function markDone(_0x14a2a3,_0x11f159){const _0x530c07=_0xa094e1;_0x11f159[_0x530c07(0x125)]();const _0x2c2908=document[_0x530c07(0x123)](_0x530c07(0x12f)+_0x14a2a3);_0x2c2908['\x63\x6c\x61\x73\x73\x4c\x69\x73\x74'][_0x530c07(0x15c)](_0x530c07(0x109)),_0x2c2908[_0x530c07(0x122)][_0x530c07(0x198)](_0x530c07(0x126)),doneSteps['\x61\x64\x64'](_0x14a2a3),updateTutProgress();const _0x2e42be=_0x14a2a3+0x1;if(_0x2e42be<=TOTAL_STEPS){const _0x23eec6=document[_0x530c07(0x123)](_0x530c07(0x12f)+_0x2e42be);_0x23eec6&&!doneSteps[_0x530c07(0x128)](_0x2e42be)&&(document[_0x530c07(0x143)]('\x2e\x73\x74\x65\x70\x2d\x63\x61\x72\x64\x2e\x73\x2d\x61\x63\x74\x69\x76\x65')[_0x530c07(0x178)](_0x1f12c2=>_0x1f12c2['\x63\x6c\x61\x73\x73\x4c\x69\x73\x74'][_0x530c07(0x15c)](_0x530c07(0x109))),_0x23eec6[_0x530c07(0x122)]['\x61\x64\x64'](_0x530c07(0x109)),setTimeout(()=>_0x23eec6['\x73\x63\x72\x6f\x6c\x6c\x49\x6e\x74\x6f\x56\x69\x65\x77']({'\x62\x65\x68\x61\x76\x69\x6f\x72':_0x530c07(0x113),'\x62\x6c\x6f\x63\x6b':'\x63\x65\x6e\x74\x65\x72'}),0x64));}if(doneSteps['\x73\x69\x7a\x65']===TOTAL_STEPS){const _0x5eedd8=document[_0x530c07(0x123)](_0x530c07(0x149));_0x5eedd8[_0x530c07(0x122)]['\x61\x64\x64'](_0x530c07(0x13b)),setTimeout(()=>_0x5eedd8[_0x530c07(0x106)]({'\x62\x65\x68\x61\x76\x69\x6f\x72':_0x530c07(0x113),'\x62\x6c\x6f\x63\x6b':_0x530c07(0x17e)}),0xc8);}}function _0x4ea7(_0x3c7051,_0x45a831){_0x3c7051=_0x3c7051-0xf1;const _0x45d7fe=_0x5c7d();let _0x2e378d=_0x45d7fe[_0x3c7051];if(_0x4ea7['\x57\x4c\x4d\x63\x70\x5a']===undefined){var _0x1dbd51=function(_0x58313a){const _0x27f8bc='\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x2b\x2f\x3d';let _0x232a7b='',_0x38e4f8='';for(let _0x57e848=0x0,_0x312b5e,_0x368d83,_0x14fd1b=0x0;_0x368d83=_0x58313a['\x63\x68\x61\x72\x41\x74'](_0x14fd1b++);~_0x368d83&&(_0x312b5e=_0x57e848%0x4?_0x312b5e*0x40+_0x368d83:_0x368d83,_0x57e848++%0x4)?_0x232a7b+=String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](0xff&_0x312b5e>>(-0x2*_0x57e848&0x6)):0x0){_0x368d83=_0x27f8bc['\x69\x6e\x64\x65\x78\x4f\x66'](_0x368d83);}for(let _0x4bdc63=0x0,_0x464255=_0x232a7b['\x6c\x65\x6e\x67\x74\x68'];_0x4bdc63<_0x464255;_0x4bdc63++){_0x38e4f8+='\x25'+('\x30\x30'+_0x232a7b['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x4bdc63)['\x74\x6f\x53\x74\x72\x69\x6e\x67'](0x10))['\x73\x6c\x69\x63\x65'](-0x2);}return decodeURIComponent(_0x38e4f8);};_0x4ea7['\x4c\x6a\x78\x56\x5a\x4f']=_0x1dbd51,_0x4ea7['\x5a\x41\x4b\x45\x55\x55']={},_0x4ea7['\x57\x4c\x4d\x63\x70\x5a']=!![];}const _0x125e7c=_0x45d7fe[0x0],_0x5c7dbe=_0x3c7051+_0x125e7c,_0x4ea71b=_0x4ea7['\x5a\x41\x4b\x45\x55\x55'][_0x5c7dbe];return!_0x4ea71b?(_0x2e378d=_0x4ea7['\x4c\x6a\x78\x56\x5a\x4f'](_0x2e378d),_0x4ea7['\x5a\x41\x4b\x45\x55\x55'][_0x5c7dbe]=_0x2e378d):_0x2e378d=_0x4ea71b,_0x2e378d;}function updateTutProgress(){const _0x1647c7=_0xa094e1,_0x45601e=Math['\x72\x6f\x75\x6e\x64'](doneSteps[_0x1647c7(0x133)]/TOTAL_STEPS*0x64);document[_0x1647c7(0x123)](_0x1647c7(0x18f))[_0x1647c7(0x114)][_0x1647c7(0x199)]=_0x45601e+'\x25',document[_0x1647c7(0x123)](_0x1647c7(0x161))[_0x1647c7(0x17c)]=doneSteps[_0x1647c7(0x133)]+'\x20\x64\x61\x72\x69\x20'+TOTAL_STEPS+_0x1647c7(0x160),document[_0x1647c7(0x123)](_0x1647c7(0xfb))[_0x1647c7(0x17c)]=_0x45601e+'\x25';}</script>
+</body>
+</html>
